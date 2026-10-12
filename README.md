@@ -106,6 +106,7 @@ plug-map/
 ├── README.md               you are here
 ├── requirements.txt        PyYAML
 ├── .env.example            template for API keys (copy to .env)
+├── render.yaml             one-click static deploy on Render
 ├── config/
 │   └── categories.yml      categories in rollout order, which vocabulary pack each uses, AI settings
 ├── vocab/
@@ -154,7 +155,7 @@ The included GitHub Actions workflow (`.github/workflows/ci.yml`) runs on every 
 
 ## Deploying the site
 
-`site/` is a plain static site with no build step. It is published to GitHub Pages by `.github/workflows/pages.yml` on every push to `main`. One-time setup: Settings → Pages → Source: **GitHub Actions**.
+`site/` is a plain static site with no build step. On [Render](https://render.com): **New → Blueprint**, then pick the repository. `render.yaml` publishes `site/`. It is also published to GitHub Pages by `.github/workflows/pages.yml` on every push to `main` (one-time setup: Settings → Pages → Source: **GitHub Actions**).
 
 To update the live site, re-run locally, commit `data/` and `site/data/`, and push. See [docs/deploy.md](docs/deploy.md).
 

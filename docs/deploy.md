@@ -10,6 +10,14 @@ python -m plugmap serve            # http://localhost:8080
 
 Browsers won't load the data from `file://`, so serve the folder instead of double-clicking `index.html`. Any static server works, e.g. `python3 -m http.server -d site 8080`.
 
+## Render
+
+1. Push the repository to GitHub (see the README).
+2. In Render: **New → Blueprint**, then select the repository. Render reads `render.yaml` and creates a static site that publishes `./site`.
+3. Each push to the default branch redeploys.
+
+Without the Blueprint: **New → Static Site**, leave the build command empty, and set the publish directory to `site`.
+
 ## GitHub Pages
 
 `.github/workflows/pages.yml` publishes the `site/` folder on every push to `main` (or on demand from the Actions tab).

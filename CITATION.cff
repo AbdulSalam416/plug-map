@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+message: >-
+  If you use Plug Map's data or software, please cite it as below and say
+  which data build you used (the "built" date in site/data/index.json).
+type: dataset
+title: "Plug Map: which open-source sustainability tools can exchange data"
+abstract: >-
+  Plug Map goes through the OpenSustain.tech catalog one category at a time
+  and records which data formats, protocols, standards, data sources and code
+  ecosystems each tool reads, writes, speaks or pulls. Every record is a claim
+  with evidence: the file and line of code, the dependency it declares, or the
+  README sentence it came from, pinned to a commit.
+authors:
+  - name: OpenSustain.tech
+    website: "https://opensustain.tech"
+version: 0.2.0
+license:
+  - MIT
+  - CC-BY-4.0
+url: "https://opensustain.tech"
+keywords:
+  - open source
+  - sustainability
+  - climate
+  - energy systems
+  - interoperability
+  - data formats
+  - research software

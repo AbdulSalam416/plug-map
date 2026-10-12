@@ -1,0 +1,36 @@
+# Which OpenSustain.tech categories Plug Map maps, in rollout order.
+#
+#   name    exactly as in the catalog's `category` column
+#   pack    vocabulary pack(s) applied on top of vocab/core.yml (files in vocab/packs/)
+#   status  planned state shown on the site before data exists: next | queued
+#           (a category with data in data/claims/ is shown as "mapped" automatically)
+#
+# To map a new category: make sure its pack exists, then run
+#   python -m plugmap run --category "<name>"
+
+catalog:
+  repo: https://github.com/protontypes/opensustain.analytics
+  path: data/projects.csv
+
+categories:
+  - {name: Renewable Energy,        pack: [energy], status: next}
+  - {name: Energy Systems,          pack: [energy], status: next}
+  - {name: Energy Storage,          pack: [energy], status: next}
+  - {name: Atmosphere,              pack: [],       status: next, planned_pack: Earth science}
+  - {name: Climate Change,          pack: [],       status: next, planned_pack: Earth science}
+  - {name: Hydrosphere,             pack: [],       status: next, planned_pack: Earth science}
+  - {name: Cryosphere,              pack: [],       status: next, planned_pack: Earth science}
+  - {name: Biosphere,               pack: [],       status: queued, planned_pack: Biodiversity}
+  - {name: Natural Resources,       pack: [],       status: queued, planned_pack: Biodiversity}
+  - {name: Consumption,             pack: [],       status: queued, planned_pack: Life cycle and emissions}
+  - {name: Emissions,               pack: [],       status: queued, planned_pack: Life cycle and emissions}
+  - {name: Industrial Ecology,      pack: [],       status: queued, planned_pack: Life cycle and emissions}
+  - {name: Sustainable Development, pack: [],       status: queued, planned_pack: Life cycle and emissions}
+
+ai:
+  provider: openai               # openai | anthropic   (override with --provider)
+  models:                        # the cheapest model each provider recommends for extraction
+    openai: gpt-6-luna           # needs OPENAI_API_KEY
+    anthropic: claude-haiku-5-5  # needs ANTHROPIC_API_KEY
+  max_readme_chars: 12000        # README text sent per tool
+  max_tokens: 1500

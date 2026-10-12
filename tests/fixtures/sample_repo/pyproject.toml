@@ -1,0 +1,4 @@
+[project]
+name = "Sample_Solar.Tools"
+version = "0.1.0"
+dependencies = ["geopandas>=0.14", "pvlib"]

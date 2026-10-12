@@ -1,0 +1,1006 @@
+# Plug Map core vocabulary: applies to every catalog category.
+# Each term says how to recognise it:
+#   dependencies       package names whose presence implies the term (any language)
+#   weak_dependencies  indirect hints (e.g. xarray -> NetCDF); recorded but not counted as plugs
+#   readme             case-insensitive regex matched line by line against the README
+#   code               regexes for calls in source code, with the role they imply
+#                      (reads | writes | speaks | pulls) and the languages they apply to
+#   home_repos         repository names that ARE this term (so a tool never "uses" itself)
+# kind: format | protocol | standard | source | ecosystem | generic
+# Edit by pull request. Run `python -m plugmap validate` before committing.
+layer: core
+settings:
+  ecosystem_usage_words: 'based on|built (on|with)|build on|\buses?\b|using|extends?|extension|interface|integrat|export|import|convert|compatib|wrapper|plug-?in|coupl|feeds?|input|output|works
+    with|run with|powered by|on top of|requires|depends|format|\bfiles?\b|support|pars(e|ing|er)|\bread|\bwrit|\bload|\bsav(e|ing)'
+terms:
+- id: netcdf
+  label: NetCDF
+  kind: format
+  dependencies:
+  - netcdf4
+  - h5netcdf
+  - netcdf
+  - ncdf4
+  - rnetcdf
+  - ncdatasets
+  weak_dependencies:
+  - xarray
+  readme: '\bnetcdf\b'
+  code:
+  - role: reads
+    languages:
+    - python
+    pattern: '\b(xr|xarray)\.(open_dataset|open_mfdataset|load_dataset|open_dataarray)\s*\(|netCDF4\.Dataset\s*\((?![^)]*[''\"](w|a)[''\"])'
+  - role: reads
+    languages:
+    - julia
+    pattern: '\bNCDataset\s*\((?![^)]*\"c\")'
+  - role: reads
+    languages:
+    - r
+    pattern: '\bnc_open\s*\('
+  - role: writes
+    languages:
+    - python
+    pattern: '\.to_netcdf\s*\(|netCDF4\.Dataset\s*\([^)]*[''\"](w|a)[''\"]'
+  - role: writes
+    languages:
+    - julia
+    pattern: '\bNCDataset\s*\([^)]*\"c\"'
+  - role: writes
+    languages:
+    - r
+    pattern: '\bnc_create\s*\('
+  - role: reads
+    languages:
+    - c
+    - cpp
+    pattern: '\bnc_open(_par|_mem)?\s*\(|\bNcFile::read\b'
+  - role: writes
+    languages:
+    - c
+    - cpp
+    pattern: '\bnc_create(_par|_mem)?\s*\(|\bNcFile::(replace|newFile|write)\b'
+  - role: reads
+    languages:
+    - fortran
+    pattern: '(?i)\bnf90_open\s*\((?![^)]*nf90_write)|\bnf_open\s*\((?![^)]*nf_write)'
+  - role: writes
+    languages:
+    - fortran
+    pattern: '(?i)\bnf90_create\s*\(|\bnf_create\s*\(|\bnf90_open\s*\([^)]*nf90_write|\bnf_open\s*\([^)]*nf_write'
+  - role: reads
+    languages:
+    - java
+    pattern: '\bNetcdfFiles?\.open(InMemory)?\s*\(|\bNetcdfDatasets?\.(open|acquire)(Dataset|File)?\s*\('
+  - role: writes
+    languages:
+    - java
+    pattern: '\bNetcdfFormatWriter\.(createNewNetcdf[34]|builder|openExisting)\s*\(|\bNetcdfFileWriter\.(createNew|openExisting)\s*\('
+  - role: reads
+    languages:
+    - matlab
+    pattern: '\bncread(att)?\s*\(|\bncinfo\s*\(|\bnetcdf\.open\s*\((?![^)]*WRITE)'
+  - role: writes
+    languages:
+    - matlab
+    pattern: '\bncwrite(att)?\s*\(|\bnccreate\s*\(|\bnetcdf\.create\s*\('
+  - role: reads
+    languages:
+    - rust
+    pattern: '\bnetcdf::open\w*\s*\('
+  - role: writes
+    languages:
+    - rust
+    pattern: '\bnetcdf::(create|append)\w*\s*\('
+  - role: reads
+    languages:
+    - javascript
+    - typescript
+    pattern: '\bnew\s+NetCDFReader\s*\('
+- id: hdf5
+  label: HDF5
+  kind: format
+  dependencies:
+  - h5py
+  - tables
+  - hdf5
+  - hdf5.jl
+  readme: '\bhdf5\b'
+  code:
+  - role: reads
+    languages:
+    - python
+    pattern: '\bread_hdf\s*\(|\bHDFStore\s*\((?![^)]*mode\s*=\s*[''\"][wa][''\"])|h5py\.File\s*\((?![^)]*[''\"](w|a|w-|x)[''\"])'
+  - role: reads
+    languages:
+    - julia
+    pattern: '\bh5read\s*\(|\bh5open\s*\([^)]*\"r\"'
+  - role: reads
+    languages:
+    - r
+    pattern: '\bh5read\s*\('
+  - role: writes
+    languages:
+    - python
+    pattern: '\.to_hdf\s*\(|\bHDFStore\s*\([^)]*mode\s*=\s*[''\"][wa][''\"]|h5py\.File\s*\([^)]*[''\"](w|a|w-|x)[''\"]'
+  - role: writes
+    languages:
+    - julia
+    pattern: '\bh5write\s*\(|\bh5open\s*\([^)]*\"[wc]\"'
+  - role: writes
+    languages:
+    - r
+    pattern: '\bh5write\s*\('
+  - role: reads
+    languages:
+    - c
+    - cpp
+    pattern: '\bH5F_ACC_RDONLY\b|\bHighFive::File::ReadOnly\b'
+  - role: writes
+    languages:
+    - c
+    - cpp
+    pattern: '\bH5Fcreate\s*\(|\bH5F_ACC_(TRUNC|RDWR|EXCL)\b|\bHighFive::File::(Overwrite|Truncate|Create|ReadWrite)\b'
+  - role: reads
+    languages:
+    - fortran
+    pattern: '(?i)\bh5fopen_f\s*\([^)]*H5F_ACC_RDONLY_F'
+  - role: writes
+    languages:
+    - fortran
+    pattern: '(?i)\bh5fcreate_f\s*\(|\bh5fopen_f\s*\([^)]*H5F_ACC_RDWR_F'
+  - role: reads
+    languages:
+    - matlab
+    pattern: '\bh5read(att)?\s*\(|\bh5info\s*\('
+  - role: writes
+    languages:
+    - matlab
+    pattern: '\bh5write(att)?\s*\(|\bh5create\s*\('
+  - role: reads
+    languages:
+    - java
+    pattern: '\bnew\s+HdfFile\s*\('
+  - role: writes
+    languages:
+    - java
+    pattern: '\bHdfFile\.write\s*\('
+  - role: reads
+    languages:
+    - rust
+    pattern: '\bhdf5::File::open\s*\('
+  - role: writes
+    languages:
+    - rust
+    pattern: '\bhdf5::File::(create|create_excl|append|open_rw)\s*\('
+  - role: reads
+    languages:
+    - javascript
+    - typescript
+    pattern: '\bnew\s+h5wasm\.File\s*\([^)]*[''"]r[''"]'
+  - role: writes
+    languages:
+    - javascript
+    - typescript
+    pattern: '\bnew\s+h5wasm\.File\s*\([^)]*[''"][wa][''"]'
+- id: parquet
+  label: Parquet / Arrow
+  kind: format
+  dependencies:
+  - pyarrow
+  - fastparquet
+  - parquet
+  readme: '\bparquet\b|apache arrow'
+  code:
+  - role: reads
+    languages:
+    - python
+    pattern: '\bread_parquet\s*\(|\bpq\.read_table\s*\(|\bscan_parquet\s*\('
+  - role: reads
+    languages:
+    - julia
+    pattern: '\bArrow\.Table\s*\(|\bParquet\.(read_parquet|File)\s*\('
+  - role: reads
+    languages:
+    - r
+    pattern: '\bread_parquet\s*\('
+  - role: writes
+    languages:
+    - python
+    pattern: '\.to_parquet\s*\(|\bpq\.write_table\s*\(|\.write_parquet\s*\('
+  - role: writes
+    languages:
+    - julia
+    pattern: '\bArrow\.write\s*\(|\bParquet\.write_parquet\s*\('
+  - role: writes
+    languages:
+    - r
+    pattern: '\bwrite_parquet\s*\('
+  - role: reads
+    languages:
+    - cpp
+    pattern: '\bparquet::arrow::(OpenFile|FileReader)\b|\bparquet::ParquetFileReader::Open\w*\s*\('
+  - role: writes
+    languages:
+    - cpp
+    pattern: '\bparquet::arrow::(WriteTable|FileWriter)\b|\bparquet::ParquetFileWriter::Open\s*\('
+  - role: reads
+    languages:
+    - java
+    pattern: '\b(Avro)?ParquetReader\.builder\s*\(|\bnew\s+(Avro)?ParquetReader\b|\bParquetFileReader\.open\s*\('
+  - role: writes
+    languages:
+    - java
+    pattern: '\b(Avro)?ParquetWriter\.builder\s*\(|\bnew\s+(Avro)?ParquetWriter\b'
+  - role: reads
+    languages:
+    - matlab
+    pattern: '\bparquetread\s*\(|\bparquetinfo\s*\('
+  - role: writes
+    languages:
+    - matlab
+    pattern: '\bparquetwrite\s*\('
+  - role: reads
+    languages:
+    - rust
+    pattern: '\bParquetRecordBatchReaderBuilder\b|\bSerializedFileReader::(new|try_from)\s*\(|\bParquetReader::new\s*\('
+  - role: writes
+    languages:
+    - rust
+    pattern: '\bArrowWriter::try_new\s*\(|\bSerializedFileWriter::new\s*\(|\bParquetWriter::new\s*\('
+  - role: reads
+    languages:
+    - javascript
+    - typescript
+    pattern: '\bParquetReader\.open\w*\s*\(|\bparquetRead(Objects)?\s*\(|\bread_parquet\s*\('
+  - role: writes
+    languages:
+    - javascript
+    - typescript
+    pattern: '\bParquetWriter\.open\w*\s*\('
+- id: zarr
+  label: Zarr
+  kind: format
+  dependencies:
+  - zarr
+  readme: '\bzarr\b'
+  code:
+  - role: reads
+    languages:
+    - python
+    pattern: '\bopen_zarr\s*\('
+  - role: writes
+    languages:
+    - python
+    pattern: '\.to_zarr\s*\('
+  - role: reads
+    languages:
+    - javascript
+    - typescript
+    pattern: '\bzarr\.open(Array|Group)?\s*\('
+- id: geojson
+  label: GeoJSON
+  kind: format
+  dependencies:
+  - geojson
+  - '@turf/turf'
+  - turf
+  readme: '\bgeojson\b'
+- id: vector_gis
+  label: Vector GIS (Shapefile / GeoPackage)
+  kind: format
+  dependencies:
+  - geopandas
+  - fiona
+  - pyogrio
+  - sf
+  - rgdal
+  - geopackage
+  readme: '\bshapefiles?\b|\bgeopackage\b|\bgpkg\b'
+  code:
+  - role: reads
+    languages:
+    - python
+    pattern: '\b(gpd|geopandas)\.read_(file|parquet)\s*\(|\bfiona\.open\s*\('
+  - role: reads
+    languages:
+    - r
+    pattern: '\b(st_read|read_sf)\s*\('
+  - role: writes
+    languages:
+    - python
+    pattern: '\.to_file\s*\('
+  - role: writes
+    languages:
+    - r
+    pattern: '\b(st_write|write_sf)\s*\('
+  - role: reads
+    languages:
+    - c
+    - cpp
+    pattern: '\bGDALOpenEx\s*\([^)]*GDAL_OF_VECTOR|\bOGROpen\s*\(|\bSHPOpen\s*\('
+  - role: writes
+    languages:
+    - c
+    - cpp
+    pattern: '\bSHPCreate\s*\(|\bCreateDataSource\s*\('
+  - role: reads
+    languages:
+    - java
+    pattern: '\bnew\s+ShapefileDataStore\s*\(|\bFileDataStoreFinder\.getDataStore\s*\('
+  - role: writes
+    languages:
+    - java
+    pattern: '\bcreateNewDataStore\s*\('
+  - role: reads
+    languages:
+    - matlab
+    pattern: '\bshaperead\s*\(|\breadgeotable\s*\(|\bshapeinfo\s*\('
+  - role: writes
+    languages:
+    - matlab
+    pattern: '\bshapewrite\s*\('
+  - role: reads
+    languages:
+    - rust
+    pattern: '\bshapefile::(read\w*|Reader::from_path)\s*\('
+  - role: writes
+    languages:
+    - rust
+    pattern: '\bshapefile::Writer::from_path\s*\('
+  - role: reads
+    languages:
+    - javascript
+    - typescript
+    pattern: '\bshapefile\.(open|read)\s*\(|\bGeoPackageAPI\.open\s*\('
+  - role: writes
+    languages:
+    - javascript
+    - typescript
+    pattern: '\bshpwrite\.(download|zip|write)\s*\('
+- id: raster_gis
+  label: Raster GIS (GeoTIFF)
+  kind: format
+  dependencies:
+  - rasterio
+  - gdal
+  - rioxarray
+  - terra
+  - raster
+  readme: '\bgeotiff\b|\bcog\b(?= )'
+  code:
+  - role: reads
+    languages:
+    - python
+    pattern: '\brasterio\.open\s*\((?![^)]*[''\"]w)|\bopen_rasterio\s*\('
+  - role: reads
+    languages:
+    - r
+    pattern: '\b(raster|rast)\s*\(\s*[''\"][^''\"]+\.tif'
+  - role: writes
+    languages:
+    - python
+    pattern: '\brasterio\.open\s*\([^)]*[''\"]w[''\"]|\.rio\.to_raster\s*\('
+  - role: writes
+    languages:
+    - r
+    pattern: '\bwriteRaster\s*\('
+  - role: reads
+    languages:
+    - c
+    - cpp
+    pattern: '\bGDALOpen(Shared)?\s*\(|\bGDALOpenEx\s*\([^)]*GDAL_OF_RASTER'
+  - role: writes
+    languages:
+    - c
+    - cpp
+    pattern: '\bGDALCreate(Copy)?\s*\(|->Create(Copy)?\s*\([^)]*\bGDT_\w+'
+  - role: reads
+    languages:
+    - matlab
+    pattern: '\b(geotiffread|readgeoraster|geotiffinfo|georasterinfo)\s*\('
+  - role: writes
+    languages:
+    - matlab
+    pattern: '\bgeotiffwrite\s*\('
+  - role: reads
+    languages:
+    - java
+    pattern: '\bnew\s+GeoTiffReader\s*\('
+  - role: writes
+    languages:
+    - java
+    pattern: '\bnew\s+GeoTiffWriter\s*\('
+  - role: reads
+    languages:
+    - javascript
+    - typescript
+    pattern: '(?i)\bgeotiff\.from(Url|Urls|ArrayBuffer|File|Blob)\s*\('
+  - role: writes
+    languages:
+    - javascript
+    - typescript
+    pattern: '\bwriteArrayBuffer\s*\('
+- id: citygml
+  label: CityGML
+  kind: format
+  readme: '\bcitygml\b'
+- id: modbus
+  label: Modbus
+  kind: protocol
+  dependencies:
+  - pymodbus
+  - minimalmodbus
+  - pymodbustcp
+  - umodbus
+  - modbus-serial
+  - jsmodbus
+  - tokio-modbus
+  - github.com/goburrow/modbus
+  - github.com/grid-x/modbus
+  - github.com/simonvetter/modbus
+  - j2mod
+  - jamod
+  - modbus
+  readme: '\bmodbus\b'
+  code:
+  - role: speaks
+    languages:
+    - python
+    pattern: '\bModbus(Tcp|Serial|Udp)Client\s*\(|\bAsyncModbus\w*Client\s*\(|minimalmodbus\.Instrument\s*\(|\.read_(holding|input)_registers\s*\('
+  - role: speaks
+    languages:
+    - c
+    - cpp
+    pattern: '\bmodbus_new_(tcp|rtu|tcp_pi)\s*\('
+  - role: speaks
+    languages:
+    - java
+    pattern: '\bnew\s+Modbus(TCP|Serial|UDP|RTU)Master\s*\(|\bModbusFactory\b'
+  - role: speaks
+    languages:
+    - javascript
+    - typescript
+    pattern: '\bnew\s+ModbusRTU\s*\(|\bnew\s+Modbus\.client\.(TCP|RTU)\s*\(|[''"](modbus-serial|jsmodbus)[''"]'
+  - role: speaks
+    languages:
+    - rust
+    pattern: '\b(tokio_modbus|rmodbus)::'
+- id: mqtt
+  label: MQTT
+  kind: protocol
+  dependencies:
+  - paho-mqtt
+  - asyncio-mqtt
+  - aiomqtt
+  - gmqtt
+  - hbmqtt
+  - mqtt
+  - rumqttc
+  - github.com/eclipse/paho.mqtt.golang
+  - org.eclipse.paho.client.mqttv3
+  - mqtt.js
+  readme: '\bmqtt\b'
+  code:
+  - role: speaks
+    languages:
+    - python
+    pattern: '\bmqtt\.Client\s*\(|\baiomqtt\.Client\s*\(|paho\.mqtt\.(client|publish)'
+  - role: speaks
+    languages:
+    - c
+    - cpp
+    pattern: '\bmosquitto_(new|connect)\s*\(|\bMQTT(Client|Async)_create\s*\(|\bmqtt::(async_)?client\b'
+  - role: speaks
+    languages:
+    - java
+    pattern: '\bnew\s+Mqtt(Async)?Client\s*\(|\bMqtt[35]?Client\.builder\s*\('
+  - role: speaks
+    languages:
+    - javascript
+    - typescript
+    pattern: '\bmqtt\.connect(Async)?\s*\('
+  - role: speaks
+    languages:
+    - rust
+    pattern: '\b(rumqttc|paho_mqtt)::'
+- id: opcua
+  label: OPC UA
+  kind: protocol
+  dependencies:
+  - opcua
+  - asyncua
+  - node-opcua
+  readme: '\bopc[\s-]?ua\b'
+  code:
+  - role: speaks
+    languages:
+    - python
+    pattern: '\b(asyncua|opcua)\.Client\s*\('
+  - role: speaks
+    languages:
+    - c
+    - cpp
+    pattern: '\bUA_(Client|Server)_new\s*\('
+  - role: speaks
+    languages:
+    - java
+    pattern: '\bOpcUaClient\.create\s*\('
+  - role: speaks
+    languages:
+    - javascript
+    - typescript
+    pattern: '\bOPCUAClient\.create\s*\('
+  - role: speaks
+    languages:
+    - rust
+    pattern: '\bopcua::(client|server)::'
+- id: lorawan
+  label: LoRaWAN
+  kind: protocol
+  readme: '\blorawan\b'
+- id: zigbee
+  label: Zigbee
+  kind: protocol
+  dependencies:
+  - zigpy
+  - zigbee-herdsman
+  readme: '\bzigbee\b'
+- id: grpc
+  label: gRPC / Protobuf
+  kind: protocol
+  dependencies:
+  - grpcio
+  - tonic
+  weak_dependencies:
+  - protobuf
+  - prost
+  readme: '\bgrpc\b|protocol buffers'
+- id: sensorthings
+  label: OGC SensorThings
+  kind: standard
+  dependencies:
+  - frost-client
+  readme: sensorthings
+- id: frictionless
+  label: Frictionless Data Package
+  kind: standard
+  dependencies:
+  - frictionless
+  - datapackage
+  - goodtables
+  readme: 'frictionless ?data|frictionlessdata|datapackage\.json|tabular data package'
+- id: linked_data
+  label: RDF / Linked Data
+  kind: standard
+  dependencies:
+  - rdflib
+  readme: '(?<!\.)\brdf\b|linked (open )?data\b|\bsparql\b|json-ld'
+- id: era5
+  label: ERA5 / Copernicus
+  kind: source
+  dependencies:
+  - cdsapi
+  - atlite
+  readme: '\bera5\b|copernicus|\bcds api\b'
+  code:
+  - role: pulls
+    languages:
+    - python
+    pattern: '\bcdsapi\.Client\s*\(|reanalysis-era5'
+  - role: pulls
+    languages:
+    - c
+    - cpp
+    - java
+    - matlab
+    - modelica
+    - rust
+    - javascript
+    - typescript
+    - fortran
+    pattern: 'reanalysis-era5|cds\.climate\.copernicus\.eu/api'
+- id: osm
+  label: OpenStreetMap
+  kind: source
+  dependencies:
+  - osmnx
+  - osmium
+  - pyrosm
+  - overpy
+  - esy-osm-pbf
+  readme: 'openstreetmap|\bosm\b'
+  code:
+  - role: pulls
+    languages:
+    - python
+    pattern: '\b(ox|osmnx)\.(graph|features|geometries)_from|overpass-api|\bosmium\.|\bpyrosm\.OSM\s*\('
+  - role: pulls
+    languages:
+    - c
+    - cpp
+    - java
+    - matlab
+    - modelica
+    - rust
+    - javascript
+    - typescript
+    - fortran
+    pattern: 'overpass-api\.de|nominatim\.openstreetmap\.org'
+- id: openmeteo
+  label: Open-Meteo
+  kind: source
+  dependencies:
+  - openmeteo-requests
+  readme: open-?meteo
+  code:
+  - role: pulls
+    languages:
+    - julia
+    - python
+    - r
+    pattern: 'api\.open-meteo\.com|openmeteo_requests\.Client\s*\('
+  - role: pulls
+    languages:
+    - c
+    - cpp
+    - java
+    - matlab
+    - modelica
+    - rust
+    - javascript
+    - typescript
+    - fortran
+    pattern: 'api\.open-meteo\.com'
+- id: nasapower
+  label: NASA POWER
+  kind: source
+  readme: 'nasa power|power\.larc'
+  code:
+  - role: pulls
+    languages:
+    - julia
+    - python
+    - r
+    pattern: 'power\.larc\.nasa\.gov'
+  - role: pulls
+    languages:
+    - c
+    - cpp
+    - java
+    - matlab
+    - modelica
+    - rust
+    - javascript
+    - typescript
+    - fortran
+    pattern: 'power\.larc\.nasa\.gov'
+- id: earth_obs
+  label: Satellite imagery (Sentinel / Earth Engine)
+  kind: source
+  dependencies:
+  - sentinelhub
+  - earthengine-api
+  - sentinelsat
+  readme: '\bsentinel-?[12]\b|earth engine'
+  code:
+  - role: pulls
+    languages:
+    - python
+    pattern: '\bee\.Initialize\s*\(|\bSentinelAPI\s*\(|sentinelhub\.\w+Request\s*\('
+  - role: pulls
+    languages:
+    - c
+    - cpp
+    - java
+    - matlab
+    - modelica
+    - rust
+    - javascript
+    - typescript
+    - fortran
+    pattern: 'earthengine\.googleapis\.com|services\.sentinel-hub\.com|catalogue\.dataspace\.copernicus\.eu'
+  - role: pulls
+    languages:
+    - javascript
+    - typescript
+    pattern: '\bee\.(initialize|data\.authenticate\w*)\s*\('
+- id: csv
+  label: CSV
+  kind: generic
+  readme: '\bcsv\b'
+  code:
+  - role: reads
+    languages:
+    - python
+    pattern: '\bread_csv\s*\(|\bcsv\.(reader|DictReader)\s*\(|\bnp\.(loadtxt|genfromtxt)\s*\('
+  - role: reads
+    languages:
+    - julia
+    pattern: '\bCSV\.(read|File)\s*\('
+  - role: reads
+    languages:
+    - r
+    pattern: '\b(read\.csv|read_csv|fread)\s*\('
+  - role: writes
+    languages:
+    - python
+    pattern: '\.to_csv\s*\(|\bcsv\.(writer|DictWriter)\s*\(|\bnp\.savetxt\s*\('
+  - role: writes
+    languages:
+    - julia
+    pattern: '\bCSV\.write\s*\('
+  - role: writes
+    languages:
+    - r
+    pattern: '\b(write\.csv|write_csv|fwrite)\s*\('
+- id: json
+  label: JSON
+  kind: generic
+  readme: '\bjson\b'
+  code:
+  - role: reads
+    languages:
+    - python
+    pattern: '\bjson\.load\s*\(|\bread_json\s*\('
+  - role: reads
+    languages:
+    - julia
+    pattern: '\bJSON3?\.(parsefile|read)\s*\('
+  - role: reads
+    languages:
+    - r
+    pattern: '\bfromJSON\s*\(|read_json\s*\('
+  - role: writes
+    languages:
+    - python
+    pattern: '\bjson\.dump\s*\(|\.to_json\s*\('
+  - role: writes
+    languages:
+    - julia
+    pattern: '\bJSON3?\.(print|write)\s*\('
+  - role: writes
+    languages:
+    - r
+    pattern: '\b(toJSON|write_json)\s*\('
+- id: excel
+  label: Excel
+  kind: generic
+  dependencies:
+  - openpyxl
+  - xlrd
+  - xlsxwriter
+  - readxl
+  - writexl
+  readme: '\bexcel\b|\bxlsx\b'
+  code:
+  - role: reads
+    languages:
+    - python
+    pattern: '\bread_excel\s*\(|openpyxl\.load_workbook\s*\(|\bExcelFile\s*\('
+  - role: reads
+    languages:
+    - julia
+    pattern: '\bXLSX\.(readxlsx|readtable|openxlsx)\s*\('
+  - role: reads
+    languages:
+    - r
+    pattern: '\bread_excel\s*\(|read\.xlsx\s*\('
+  - role: writes
+    languages:
+    - python
+    pattern: '\.to_excel\s*\(|\bExcelWriter\s*\(|xlsxwriter\.Workbook\s*\('
+  - role: writes
+    languages:
+    - julia
+    pattern: '\bXLSX\.writetable\s*\('
+  - role: writes
+    languages:
+    - r
+    pattern: '\b(write_xlsx|write\.xlsx)\s*\('
+- id: sql
+  label: SQL database
+  kind: generic
+  dependencies:
+  - sqlalchemy
+  - psycopg2
+  - psycopg2-binary
+  - psycopg
+  - pymysql
+  - rpostgres
+  readme: '\bpostgres(ql)?\b|\bsqlite\b|\bmysql\b'
+- id: timeseries_db
+  label: Time-series DB (InfluxDB / Timescale)
+  kind: generic
+  dependencies:
+  - influxdb
+  - influxdb-client
+  - influxdb3-python
+  readme: 'influxdb|timescaledb'
+- id: rest_api
+  label: REST / HTTP API
+  kind: generic
+  dependencies:
+  - fastapi
+  - flask-restful
+  - flask-restx
+  readme: '\brest(ful)?\s*api\b'
+- id: yaml
+  label: YAML config
+  kind: generic
+  dependencies:
+  - pyyaml
+  - ruamel.yaml
+  - yaml
+  - yaml.jl
+  readme: '\byaml\b'
+  code:
+  - role: reads
+    languages:
+    - python
+    pattern: '\byaml\.(safe_)?load\s*\('
+  - role: reads
+    languages:
+    - julia
+    pattern: '\bYAML\.load(_file)?\s*\('
+  - role: writes
+    languages:
+    - python
+    pattern: '\byaml\.(safe_)?dump\s*\('
+  - role: writes
+    languages:
+    - julia
+    pattern: '\bYAML\.write(_file)?\s*\('
+- id: fmi
+  label: FMI / FMU co-simulation
+  kind: standard
+  dependencies:
+  - fmpy
+  - pyfmi
+  - fmi.jl
+  - fmiimport
+  readme: '\bfmi\b|\bfmus?\b|functional mock-?up'
+- id: modelica
+  label: Modelica
+  kind: ecosystem
+  dependencies:
+  - ompython
+  - buildingspy
+  - modelicares
+  readme: '\bmodelica\b'
+- id: gym
+  label: Gymnasium RL environment API
+  kind: standard
+  dependencies:
+  - gymnasium
+  - gym
+  readme: '\bgymnasium\b|openai gym'
+- id: openfoam
+  label: OpenFOAM
+  kind: ecosystem
+  dependencies:
+  - pyfoam
+  - foamlib
+  readme: '\bopenfoam\b'
+- id: canbus
+  label: CAN bus
+  kind: protocol
+  dependencies:
+  - python-can
+  - cantools
+  readme: '\bcan[ -]?bus\b'
+  code:
+  - role: speaks
+    languages:
+    - python
+    pattern: '\bcan\.(interface\.)?Bus\s*\('
+  - role: speaks
+    languages:
+    - c
+    - cpp
+    pattern: '\b(PF|AF)_CAN\b'
+  - role: speaks
+    languages:
+    - rust
+    pattern: '\bsocketcan::'
+  - role: speaks
+    languages:
+    - javascript
+    - typescript
+    pattern: '\bsocketcan\.createRawChannel\s*\('
+- id: rs485
+  label: RS-485 serial
+  kind: protocol
+  readme: '\brs-?485\b'
+# Accepted from vocab/proposals.yml on 2026-10-11 (AI-proposed, reviewed in session).
+- id: home_assistant
+  label: Home Assistant
+  kind: ecosystem
+  dependencies:
+  - homeassistant
+  readme: '\bhome ?assistant\b'
+  home_repos:
+  - home-assistant
+  - Home Assistant
+- id: mcp
+  label: Model Context Protocol (MCP)
+  kind: protocol
+  dependencies:
+  - mcp
+  - fastmcp
+  - '@modelcontextprotocol/sdk'
+  readme: '\bmodel context protocol\b|\bmcp[ -]server\b'
+  code:
+  - role: speaks
+    languages:
+    - python
+    pattern: '\bFastMCP\s*\(|\bfrom mcp\.server\b'
+  - role: speaks
+    languages:
+    - javascript
+    - typescript
+    pattern: '[''"]@modelcontextprotocol/sdk[\w/.-]*[''"]|\bnew\s+McpServer\s*\('
+- id: i2c
+  label: I2C
+  kind: protocol
+  dependencies:
+  - smbus
+  - smbus2
+  readme: '\bi2c\b|\bi²c\b'
+  code:
+  - role: speaks
+    languages:
+    - python
+    pattern: '\bSMBus\s*\(|\bbusio\.I2C\s*\('
+- id: openmdao
+  label: OpenMDAO
+  kind: ecosystem
+  dependencies:
+  - openmdao
+  readme: '\bopenmdao\b'
+  home_repos:
+  - OpenMDAO
+- id: openvsp
+  label: OpenVSP
+  kind: ecosystem
+  dependencies:
+  - openvsp
+  readme: '\bopenvsp\b|\bvspaero\b'
+  home_repos:
+  - OpenVSP
+- id: exafmm
+  label: ExaFMM
+  kind: ecosystem
+  dependencies:
+  - exafmm
+  readme: '\bexafmm\b'
+  home_repos:
+  - exafmm
+  - ExaFMM
+# "chemicals" and "thermo" are common words, so the README pattern needs the library context.
+- id: chemicals
+  label: chemicals (Python library)
+  kind: ecosystem
+  dependencies:
+  - chemicals
+  readme: 'CalebBell/chemicals|\bchemicals (library|package)\b'
+  home_repos:
+  - chemicals
+- id: thermo
+  label: thermo (Python library)
+  kind: ecosystem
+  dependencies:
+  - thermo
+  readme: 'CalebBell/thermo\b|\bthermo (library|package)\b'
+  home_repos:
+  - thermo
+- id: thermosteam
+  label: ThermoSTEAM
+  kind: ecosystem
+  dependencies:
+  - thermosteam
+  readme: '\bthermosteam\b'
+  home_repos:
+  - thermosteam
+  - ThermoSTEAM

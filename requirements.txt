@@ -1,0 +1,3 @@
+# Plug Map needs only PyYAML beyond the Python standard library.
+# git must also be installed (it is on macOS with the Xcode command line tools).
+pyyaml>=6

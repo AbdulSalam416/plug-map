@@ -1,0 +1,6 @@
+# synthetic fixture
+pandas>=2
+xarray
+netCDF4==1.6.5
+pyarrow ; python_version >= "3.9"
+paho-mqtt

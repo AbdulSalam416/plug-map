@@ -1,0 +1,63 @@
+# Vocabulary proposals awaiting review. Written by `python -m plugmap propose`.
+# To accept: add the term to vocab/core.yml or a pack (with patterns), then set status: accepted.
+# To reject: set status: rejected. Rejected names are not proposed again.
+proposals:
+- name: ChemSep PR
+  kind: source
+  role: pulls
+  found_in: thermo
+  category: Renewable Energy
+  quote: '>>> kijs = IPDB.get_ip_asymmetric_matrix(''ChemSep PR'', constants.CASs, ''kij'')'
+  status: rejected
+  proposed_by: openai:gpt-6-luna
+  date: '2026-10-11'
+  reason: 'Not a data interface: a parameter set inside the thermo library, quoted from a doctest.'
+  decided: '2026-10-11'
+- name: OpenMP
+  kind: ecosystem
+  role: builds-on
+  found_in: FLOWUnsteady
+  category: Renewable Energy
+  quote: CPU parallelization through OpenMP
+  status: rejected
+  proposed_by: openai:gpt-6-luna
+  date: '2026-10-11'
+  also_found_in:
+  - HAMS
+  reason: 'Not a data interface: a parallel-programming API for compiled code.'
+  decided: '2026-10-11'
+- name: National Oceanographic and Atmospheric Administration
+  kind: source
+  role: reads
+  found_in: Machine-Learning-for-Solar-Energy-Prediction
+  category: Renewable Energy
+  quote: we processed the raw weather data files (input) from the National Oceanographic and Atmospheric Administration
+  status: rejected
+  proposed_by: openai:gpt-6-luna
+  date: '2026-10-11'
+  reason: 'Too broad: an agency, not one data source. Propose specific NOAA products instead.'
+  decided: '2026-10-11'
+- name: Urbana-Champaign solar farm
+  kind: source
+  role: reads
+  found_in: Machine-Learning-for-Solar-Energy-Prediction
+  category: Renewable Energy
+  quote: the power production data files (output) from Urbana-Champaign solar farm
+  status: rejected
+  proposed_by: openai:gpt-6-luna
+  date: '2026-10-11'
+  reason: 'Too narrow: one project''s own dataset, not something tools exchange.'
+  decided: '2026-10-11'
+- name: Zephyr RTOS
+  kind: ecosystem
+  role: builds-on
+  found_in: LibreSolar
+  category: Renewable Energy
+  quote: based on [Zephyr RTOS](https://www.zephyrproject.org/)
+  status: rejected
+  proposed_by: openai:gpt-6-luna
+  date: '2026-10-11'
+  also_found_in:
+  - Charge Controller Firmware
+  reason: 'Not a data interface: an embedded operating system.'
+  decided: '2026-10-11'

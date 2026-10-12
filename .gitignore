@@ -1,0 +1,16 @@
+# Cloned repositories and the catalog checkout (about 1 GB for the energy categories)
+cache/
+
+# API keys. Never commit this file.
+.env
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# macOS
+.DS_Store
+
+TODO.md

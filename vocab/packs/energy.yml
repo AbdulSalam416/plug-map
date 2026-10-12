@@ -1,0 +1,621 @@
+# Energy pack: terms specific to the energy categories.
+# Same fields as vocab/core.yml. Applied to the categories that list `energy` in config/categories.yml.
+layer: energy
+terms:
+- id: gbxml
+  label: gbXML
+  kind: format
+  readme: '\bgbxml\b'
+- id: weather_files
+  label: Weather files (EPW / TMY)
+  kind: format
+  readme: '\bepw\b|\btmy[23]?\b|typical meteorological year'
+  code:
+  - role: reads
+    languages:
+    - python
+    pattern: '\bread_(epw|tmy3|tmy2|psm3|pvgis_tmy)\s*\('
+  - role: reads
+    languages:
+    - modelica
+    pattern: '\bReaderTMY3\b'
+- id: ocpp
+  label: OCPP (EV charging)
+  kind: protocol
+  dependencies:
+  - ocpp
+  readme: '\bocpp\b'
+  code:
+  - role: speaks
+    languages:
+    - python
+    pattern: '\bfrom ocpp\.v(16|201)\b|\bimport ocpp\b'
+  - role: speaks
+    languages:
+    - javascript
+    - typescript
+    pattern: '[''"]ocpp(1\.[256]|2\.0(\.1)?)[''"]|[''"](ocpp-rpc|ocpp-ts|@voltbras/ts-ocpp|ocpp-eliftech)[''"]'
+  - role: speaks
+    languages:
+    - java
+    pattern: '[''"]ocpp(1\.[256]|2\.0(\.1)?)[''"]|\beu\.chargetime\.ocpp\b'
+  - role: speaks
+    languages:
+    - c
+    - cpp
+    pattern: '[''"]ocpp(1\.[256]|2\.0(\.1)?)[''"]|\bocpp::v(16|201)::'
+  - role: speaks
+    languages:
+    - rust
+    pattern: '[''"]ocpp(1\.[256]|2\.0(\.1)?)[''"]|\brust_ocpp::'
+- id: ocpi
+  label: OCPI (EV roaming)
+  kind: protocol
+  readme: '\bocpi\b'
+- id: openadr
+  label: OpenADR
+  kind: protocol
+  dependencies:
+  - openleadr
+  - openadr
+  readme: openadr
+- id: ieee2030_5
+  label: IEEE 2030.5
+  kind: protocol
+  readme: '2030\.5'
+- id: sunspec
+  label: SunSpec
+  kind: protocol
+  dependencies:
+  - pysunspec
+  - pysunspec2
+  readme: '\bsunspec\b'
+- id: iec61850
+  label: IEC 61850
+  kind: protocol
+  dependencies:
+  - pyiec61850
+  - iec61850
+  - libiec61850
+  readme: 'iec\s*-?\s*61850'
+- id: iec104
+  label: IEC 60870-5-104
+  kind: protocol
+  dependencies:
+  - c104
+  - iec104
+  readme: '60870-5-10[14]|\biec\s*-?\s*104\b'
+- id: dnp3
+  label: DNP3
+  kind: protocol
+  dependencies:
+  - pydnp3
+  - dnp3
+  readme: '\bdnp3\b'
+- id: bacnet
+  label: BACnet
+  kind: protocol
+  dependencies:
+  - bacpypes
+  - bacpypes3
+  - bac0
+  readme: '\bbacnet\b'
+  code:
+  - role: speaks
+    languages:
+    - python
+    pattern: '\bBAC0\.(lite|connect)\s*\('
+  - role: speaks
+    languages:
+    - javascript
+    - typescript
+    pattern: '\bnew\s+[Bb]ac(net|stack)\s*\(|[''"](node-bacnet|bacstack|@bacnet-js/client)[''"]'
+  - role: speaks
+    languages:
+    - java
+    pattern: '\bbacnet4j\b'
+  - role: speaks
+    languages:
+    - c
+    - cpp
+    pattern: '\bbacnet/\w+\.h\b|\bbip_init\s*\('
+- id: knx
+  label: KNX
+  kind: protocol
+  dependencies:
+  - xknx
+  - pyknx
+  readme: '\bknx\b'
+- id: dlms
+  label: DLMS/COSEM (smart meters)
+  kind: protocol
+  dependencies:
+  - dlms-cosem
+  - gurux.dlms
+  readme: '\bdlms\b|\bcosem\b'
+- id: openpaygo
+  label: OpenPAYGO
+  kind: protocol
+  dependencies:
+  - openpaygo
+  readme: openpaygo
+- id: sts
+  label: STS prepaid tokens (IEC 62055)
+  kind: protocol
+  readme: 'standard transfer specification|iec\s*-?\s*62055'
+- id: cim
+  label: CIM / CGMES (IEC 61970/61968)
+  kind: standard
+  dependencies:
+  - cimpy
+  - cimgraph
+  - cimantic
+  - pypowsybl
+  - powsybl-core
+  readme: '\bcgmes\b|iec\s*-?\s*619(70|68)|common information model'
+  code:
+  - role: reads
+    languages:
+    - python
+    pattern: '\bcim_import\s*\(|\bload_cgmes\s*\(|pypowsybl\.network\.load\s*\('
+  - role: writes
+    languages:
+    - python
+    pattern: '\bcim_export\s*\('
+  - role: reads
+    languages:
+    - java
+    pattern: '\bCgmesImport\b'
+  - role: writes
+    languages:
+    - java
+    pattern: '\bCgmesExport\b'
+- id: brick
+  label: Brick Schema
+  kind: standard
+  dependencies:
+  - brickschema
+  readme: brick ?schema
+- id: haystack
+  label: Project Haystack
+  kind: standard
+  dependencies:
+  - pyhaystack
+  - phable
+  - hszinc
+  readme: project haystack
+- id: oeo
+  label: Open Energy Ontology / Platform
+  kind: standard
+  dependencies:
+  - oedialect
+  - omi
+  - oep-client
+  - oeplatform
+  readme: 'open energy (ontology|platform)|\boeo\b|\boep\b|openenergyplatform'
+- id: iamc
+  label: IAMC data format
+  kind: standard
+  dependencies:
+  - pyam-iamc
+  - pyam
+  - nomenclature-iamc
+  readme: '\biamc\b|\bpyam\b'
+  code:
+  - role: reads
+    languages:
+    - python
+    pattern: '\bIamDataFrame\s*\('
+- id: pypsa
+  label: PyPSA network format
+  kind: ecosystem
+  dependencies:
+  - pypsa
+  readme: '\bpypsa\b'
+  home_repos:
+  - pypsa
+  code:
+  - role: reads
+    languages:
+    - python
+    pattern: '\bpypsa\.Network\s*\(\s*(f?[''\"]|snakemake\.input|path|fn|file)|\.import_from_(netcdf|csv_folder|hdf5)\s*\('
+  - role: writes
+    languages:
+    - python
+    pattern: '\.export_to_(netcdf|csv_folder|hdf5)\s*\('
+- id: pandapower
+  label: pandapower network format
+  kind: ecosystem
+  dependencies:
+  - pandapower
+  - pandapipes
+  readme: '\bpandapower\b'
+  home_repos:
+  - pandapower
+  code:
+  - role: reads
+    languages:
+    - python
+    pattern: '\b(pp|pandapower)\.(from_json|from_excel|from_sqlite|from_pickle)\s*\('
+  - role: writes
+    languages:
+    - python
+    pattern: '\b(pp|pandapower)\.(to_json|to_excel|to_sqlite|to_pickle)\s*\('
+- id: matpower
+  label: MATPOWER case format
+  kind: ecosystem
+  dependencies:
+  - pypower
+  - matpower
+  - matpowercaseframes
+  - powermodels
+  - powersystems
+  readme: '\bmatpower\b'
+  home_repos:
+  - matpower
+  code:
+  - role: reads
+    languages:
+    - python
+    pattern: '\bfrom_mpc\s*\(|\bloadcase\s*\(|\bCaseFrames\s*\(|parse_matpower'
+  - role: reads
+    languages:
+    - julia
+    pattern: '\bparse_(file|matpower)\s*\(\s*[^)]*\.m\b|\bparse_matpower\s*\('
+  - role: writes
+    languages:
+    - python
+    pattern: '\bto_mpc\s*\('
+  - role: writes
+    languages:
+    - julia
+    pattern: '\bexport_matpower\s*\('
+  - role: reads
+    languages:
+    - matlab
+    pattern: '\bloadcase\s*\(|\brun(pf|opf|dcpf|dcopf|uopf|duopf)\s*\('
+  - role: writes
+    languages:
+    - matlab
+    pattern: '\bsavecase\s*\('
+- id: opendss
+  label: OpenDSS
+  kind: ecosystem
+  dependencies:
+  - opendssdirect.py
+  - opendssdirect
+  - dss-python
+  - dss_python
+  - py-dss-interface
+  - dss
+  readme: '\bopendss\b'
+  home_repos:
+  - opendss
+  - opendssdirect.py
+  code:
+  - role: reads
+    languages:
+    - python
+    pattern: '(Text\.Command|run_command|text)\s*\(\s*f?[''"](compile|redirect)'
+- id: gridlabd
+  label: GridLAB-D
+  kind: ecosystem
+  dependencies:
+  - gridlabd
+  readme: gridlab-?d
+  home_repos:
+  - gridlab-d
+- id: psse
+  label: PSS/E RAW
+  kind: ecosystem
+  dependencies:
+  - psspy
+  readme: '\bpss/?e\b'
+  code:
+  - role: reads
+    languages:
+    - julia
+    pattern: '\bparse_psse\s*\('
+- id: osemosys
+  label: OSeMOSYS (incl. otoole)
+  kind: ecosystem
+  dependencies:
+  - otoole
+  readme: '\bosemosys\b|\botoole\b'
+  home_repos:
+  - osemosys
+- id: oemof
+  label: oemof
+  kind: ecosystem
+  dependencies:
+  - oemof.solph
+  - oemof-solph
+  - oemof
+  - oemof.network
+  - oemof-network
+  - oemof.tools
+  - oemof-thermal
+  - oemof.thermal
+  - tespy
+  readme: '\boemof\b'
+  home_repos:
+  - oemof
+  - oemof solph
+  - oemof-solph
+  - oemof.solph
+- id: energyplus
+  label: EnergyPlus (IDF)
+  kind: ecosystem
+  dependencies:
+  - eppy
+  - opyplus
+  - geomeppy
+  - besos
+  - pyenergyplus
+  - energyplus-wrapper
+  readme: '\benergyplus\b'
+  home_repos:
+  - energyplus
+- id: pvlib
+  label: pvlib
+  kind: ecosystem
+  dependencies:
+  - pvlib
+  readme: '\bpvlib\b'
+  home_repos:
+  - pvlib
+  - pvlib python
+  - pvlib-python
+- id: plexos
+  label: PLEXOS
+  kind: ecosystem
+  readme: '\bplexos\b'
+- id: messageix
+  label: MESSAGEix / ixmp
+  kind: ecosystem
+  dependencies:
+  - message-ix
+  - message_ix
+  - ixmp
+  readme: 'messageix|message_ix|\bixmp\b'
+  home_repos:
+  - message-ix
+  - message_ix
+  - messageix
+- id: entsoe
+  label: ENTSO-E Transparency
+  kind: source
+  dependencies:
+  - entsoe-py
+  readme: entso-?e
+  code:
+  - role: pulls
+    languages:
+    - python
+    pattern: '\bEntsoe(Pandas|Raw)Client\s*\('
+  - role: pulls
+    languages:
+    - c
+    - cpp
+    - java
+    - matlab
+    - modelica
+    - rust
+    - javascript
+    - typescript
+    - fortran
+    - python
+    - julia
+    - r
+    pattern: 'transparency\.entsoe\.eu|web-api\.tp\.entsoe\.eu'
+- id: eia
+  label: US EIA
+  kind: source
+  dependencies:
+  - eiapy
+  - myeia
+  readme: '\beia\b|energy information administration'
+  code:
+  - role: pulls
+    languages:
+    - julia
+    - python
+    - r
+    pattern: 'api\.eia\.gov'
+  - role: pulls
+    languages:
+    - c
+    - cpp
+    - java
+    - matlab
+    - modelica
+    - rust
+    - javascript
+    - typescript
+    - fortran
+    pattern: 'api\.eia\.gov'
+- id: pvgis
+  label: PVGIS
+  kind: source
+  readme: '\bpvgis\b'
+  code:
+  - role: pulls
+    languages:
+    - julia
+    - python
+    - r
+    pattern: 're\.jrc\.ec\.europa\.eu/api|\bget_pvgis_\w+\s*\('
+  - role: pulls
+    languages:
+    - c
+    - cpp
+    - java
+    - matlab
+    - modelica
+    - rust
+    - javascript
+    - typescript
+    - fortran
+    pattern: 're\.jrc\.ec\.europa\.eu/api'
+- id: ninja
+  label: Renewables.ninja
+  kind: source
+  readme: 'renewables\.ninja'
+  code:
+  - role: pulls
+    languages:
+    - julia
+    - python
+    - r
+    pattern: 'renewables\.ninja/api'
+  - role: pulls
+    languages:
+    - c
+    - cpp
+    - java
+    - matlab
+    - modelica
+    - rust
+    - javascript
+    - typescript
+    - fortran
+    pattern: 'renewables\.ninja/api'
+- id: powermodels
+  label: PowerModels.jl
+  kind: ecosystem
+  dependencies:
+  - powermodels
+  - powermodelsdistribution
+  - powermodelsacdc
+  readme: powermodels
+- id: sienna
+  label: Sienna (PowerSystems.jl)
+  kind: ecosystem
+  dependencies:
+  - powersystems
+  - powersimulations
+  - powersimulationsdynamics
+  readme: '\bsienna\b|powersystems\.jl'
+- id: pybamm
+  label: PyBaMM battery models
+  kind: ecosystem
+  dependencies:
+  - pybamm
+  readme: '\bpybamm\b'
+- id: rts_gmlc
+  label: RTS-GMLC test system
+  kind: format
+  readme: rts-?gmlc
+# Accepted from vocab/proposals.yml on 2026-10-11 (AI-proposed, reviewed in session).
+- id: hoymiles
+  label: Hoymiles protocol
+  kind: protocol
+  dependencies:
+  - hoymiles-wifi
+  readme: '\bhoymiles\b'
+- id: inverter_sunsynk
+  label: Sunsynk inverters
+  kind: source
+  dependencies:
+  - sunsynk
+  readme: '\bsunsynk\b'
+- id: inverter_deye
+  label: Deye inverters
+  kind: source
+  readme: '\bdeye\b'
+- id: inverter_solis
+  label: Solis inverters
+  kind: source
+  readme: '\bsolis\b'
+# "lux" is also the unit of illuminance, so match only the brand.
+- id: inverter_lux
+  label: Lux Power inverters
+  kind: source
+  readme: '\blux ?power\b|\blux(tek)? inverters?\b'
+- id: inverter_foxess
+  label: FoxESS inverters
+  kind: source
+  readme: '\bfox ?ess\b'
+- id: inverter_goodwe
+  label: GoodWe inverters
+  kind: source
+  dependencies:
+  - goodwe
+  readme: '\bgoodwe\b'
+- id: inverter_huawei
+  label: Huawei inverters
+  kind: source
+  dependencies:
+  - huawei-solar
+  readme: '\bfusionsolar\b|\bsun2000\b|\bhuawei (solar|inverters?)\b'
+- id: xfoil
+  label: XFOIL
+  kind: ecosystem
+  readme: '\bxfoil\b'
+  home_repos:
+  - XFOIL
+- id: psu_wopwop
+  label: PSU-WOPWOP
+  kind: ecosystem
+  readme: '\bwopwop\b'
+- id: openfast
+  label: OpenFAST
+  kind: ecosystem
+  dependencies:
+  - openfast
+  - openfast-toolbox
+  readme: '\bopenfast\b'
+  home_repos:
+  - openfast
+  - OpenFAST
+- id: openfast_files
+  label: OpenFAST input/output files
+  kind: format
+  readme: '\bopenfast (input|output)s?\b|\.fst\b'
+  code:
+  - role: reads
+    languages:
+    - python
+    pattern: '\bFAST(Input|Output)File\s*\('
+- id: hawc2
+  label: HAWC2
+  kind: ecosystem
+  weak_dependencies:
+  - wetb
+  readme: '\bhawc2\b'
+  home_repos:
+  - HAWC2
+- id: wisdem
+  label: WISDEM
+  kind: ecosystem
+  dependencies:
+  - wisdem
+  readme: '\bwisdem\b'
+  home_repos:
+  - WISDEM
+- id: rosco
+  label: ROSCO
+  kind: ecosystem
+  dependencies:
+  - rosco
+  - rosco-toolbox
+  readme: '\brosco\b'
+  home_repos:
+  - ROSCO
+- id: avrswap
+  label: Bladed controller interface (avrSWAP)
+  kind: protocol
+  readme: '\bavrswap\b|\bbladed[- ]style (controller )?interface\b'
+- id: solax
+  label: Solax real-time API
+  kind: source
+  dependencies:
+  - solax
+  readme: '\bsolax\b'
+  code:
+  - role: pulls
+    languages:
+    - python
+    pattern: 'solaxcloud\.com|\bsolax\.real_time_api\s*\('
+  home_repos:
+  - solax

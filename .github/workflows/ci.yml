@@ -1,0 +1,23 @@
+name: checks
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Vocabulary files are valid
+        run: python -m plugmap validate
+      - name: Tests (no network, no API keys)
+        run: python -m unittest discover -s tests -t . -v
+      - name: Site data is up to date with data/
+        run: |
+          python -m plugmap site
+          git diff --exit-code -- site/data ':!site/data/index.json'

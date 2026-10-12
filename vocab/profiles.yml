@@ -1,0 +1,33 @@
+# Profiles: what's inside a file, beyond its format.
+#
+# Two tools that write and read NetCDF only fit together if the file holds the variables the
+# reader expects. A profile records the variable names or conventions found in the same source
+# file as a read or write call, so the site can tell "same format" from "same format and the
+# same variables". See docs/vocabulary.md.
+#
+#   formats     vocabulary terms (kind: format) the profile applies to
+#   names       variable names, matched as whole string literals in code ("t2m", 't2m')
+#   names_file  the same, one name per line, in vocab/names/ (lines starting with # are skipped)
+#   pattern     regex for a marker in code, such as a conventions attribute; recorded as the
+#               profile id itself
+#
+# Only calls in a tool's own code (not tests or examples) get a profile, and only names in
+# code, not in comments. Edit by pull request. Run `python -m plugmap validate` before committing.
+profiles:
+- id: cf
+  label: CF standard names
+  formats: [netcdf, zarr, hdf5]
+  names_file: names/cf-standard-names.txt
+- id: cf_conventions
+  label: CF conventions
+  formats: [netcdf, zarr]
+  pattern: '[''"]Conventions[''"][\]\s:=,]*[''"]CF-\d|\bConventions\s*=\s*[''"]CF-\d|\bcf_xarray\b'
+# ERA5 short names. Short or common ones (tp, sp, e, cp, sd, ro, str, z) are left out because
+# they also turn up as unrelated strings.
+- id: era5
+  label: ERA5 variable names
+  formats: [netcdf, zarr, hdf5]
+  names: [t2m, d2m, u10, v10, u100, v100, u10n, v10n, i10fg, fg10, ssrd, ssrdc, strd, strdc, ssr, ssrc,
+          fdir, cdir, tisr, msl, tcc, lcc, mcc, hcc, skt, sst, swvl1, swvl2, swvl3, swvl4, stl1, stl2,
+          stl3, stl4, blh, cape, slhf, sshf, sro, ssro, lsp, pev, tcwv, tco3, siconc, smlt, ptype,
+          mtpr, msdwswrf, msdwlwrf, msnswrf, msnlwrf, msdrswrf]

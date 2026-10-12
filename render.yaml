@@ -1,0 +1,30 @@
+# Render Blueprint: deploys the site as a static site.
+# The site data in site/data/ is committed, so there is no build step:
+# update the data locally (python -m plugmap run / site), commit, push.
+services:
+  - type: web
+    name: plug-map
+    runtime: static
+    buildCommand: ""
+    staticPublishPath: ./site
+    headers:
+      - path: /data/*
+        name: Cache-Control
+        value: public, max-age=300
+      # Revalidate the page, stylesheet and script on every visit, so a deploy never
+      # pairs new HTML with a cached older styles.css or app.js.
+      - path: /*.html
+        name: Cache-Control
+        value: no-cache
+      - path: /*.css
+        name: Cache-Control
+        value: no-cache
+      - path: /*.js
+        name: Cache-Control
+        value: no-cache
+      - path: /
+        name: Cache-Control
+        value: no-cache
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff

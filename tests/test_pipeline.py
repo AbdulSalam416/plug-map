@@ -25,6 +25,8 @@ class PipelineTest(unittest.TestCase):
         self.patches = [
             mock.patch.object(pipeline, "CLAIMS_DIR", d["claims"]),
             mock.patch.object(pipeline, "TOOLS_DIR", d["tools"]),
+            mock.patch.object(pipeline, "SNAPSHOTS", os.path.join(self.tmp, "snapshots.json")),
+            mock.patch.object(aggregate, "SNAPSHOTS", os.path.join(self.tmp, "snapshots.json")),
             mock.patch.object(pipeline.catalog, "projects", lambda name: [row]),
             mock.patch.object(pipeline.harvest, "harvest_many", lambda urls, **kw: {URL: rec}),
             mock.patch.object(aggregate, "CLAIMS_DIR", d["claims"]),
@@ -50,9 +52,13 @@ class PipelineTest(unittest.TestCase):
         self.assertTrue(all(c["repo"] == URL and c["commit"] == "abc123" for c in claims))
         self.assertTrue(all(c["tool"] == "pkg:pypi/sample-solar-tools" for c in claims))
 
+        pipeline.record_snapshot("renewable-energy", "2026-10-11")  # as if mapped on that day
         index = aggregate.build_site_data(log=lambda *a: None)
         cat = next(c for c in index["cats"] if c["slug"] == "renewable-energy")
         self.assertEqual((cat["s"], cat["read"], cat["total"]), ("mapped", 1, 1))
+        self.assertEqual(cat["mapped"], "2026-10-11")
+        self.assertEqual(index["snapshot"], {"first": "2026-10-11", "last": "2026-10-11"},
+                         "the snapshot is when the data was read, not when the site was built")
         with open(os.path.join(self.d["site"], "renewable-energy.json"), encoding="utf-8") as f:
             tool = json.load(f)["tools"][0]
         self.assertEqual((tool["n"], tool["st"], tool["a"], tool["k"]), ("sample-solar", 12, "2026-10-01", "abc123"))

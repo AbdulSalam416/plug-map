@@ -198,6 +198,9 @@ a.card:hover .cta, .inline-link:hover { color: var(--color-link); border-color: 
 .badge.queued { border: 1px dashed var(--color-text-secondary); color: var(--color-text-secondary); }
 .badge.accepted { background: var(--color-accepted-bg); color: var(--color-accepted); }
 .badge.rejected { background: var(--color-track); color: var(--color-text-soft); }
+.snapshot { align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border: 1px solid var(--color-border-strong); border-radius: 999px; font-family: var(--font-heading); font-size: 13px; font-weight: 500; color: var(--color-text-soft); text-decoration: none; font-variant-numeric: tabular-nums; }
+a.snapshot:hover { border-color: var(--color-primary); color: var(--color-link); }
+.snapshot-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-fill-write); }
 .tag { font-family: var(--font-heading); font-size: 12px; font-weight: 500; padding: 2px 8px; background: var(--color-bg-alt); border: 1px solid var(--color-border); color: var(--color-text-soft); }
 .tag.outline { background: none; border-color: var(--color-border-strong); }
 .tag.aux { background: var(--color-warning-bg); border-color: currentColor; color: var(--color-warning); }

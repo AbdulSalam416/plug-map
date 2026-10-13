@@ -11,8 +11,9 @@ MIT licence in [`LICENSE`](LICENSE).
 
 > Plug Map by AbdulSalam416, CC BY 4.0. https://plug-map.onrender.com
 
-Or cite it using [`CITATION.cff`](CITATION.cff). Please say which data build
-you used (the `built` date in `site/data/index.json`).
+Or cite it using [`CITATION.cff`](CITATION.cff). Please say which data
+snapshot you used: the date shown on the site, recorded per category in
+`data/snapshots.json`.
 
 ## Parts that come from elsewhere
 

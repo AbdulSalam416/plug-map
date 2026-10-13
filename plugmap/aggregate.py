@@ -1,6 +1,6 @@
 """Build the site's data files from the committed claims and tool records.
 
-    site/data/index.json        categories, vocabulary, proposals, headline numbers
+    site/data/index.json        categories, vocabulary, proposals, headline numbers, snapshot dates
     site/data/<slug>.json       one per mapped category: tools with their claims (compact keys)
 """
 import json
@@ -10,7 +10,7 @@ from collections import Counter, defaultdict
 import yaml
 
 from .catalog import category_counts
-from .paths import CLAIMS_DIR, PROPOSALS, SITE_DATA, TOOLS_DIR, load_config, slugify
+from .paths import CLAIMS_DIR, PROPOSALS, SITE_DATA, SNAPSHOTS, TOOLS_DIR, load_config, slugify
 from .vocab import Vocabulary, load_profiles, pack_names
 
 
@@ -35,6 +35,10 @@ def build_site_data(log=print):
         if os.path.exists(counts_path):
             with open(counts_path, encoding="utf-8") as f:
                 totals = json.load(f)
+    snapshots = {}
+    if os.path.exists(SNAPSHOTS):
+        with open(SNAPSHOTS, encoding="utf-8") as f:
+            snapshots = json.load(f)
     os.makedirs(SITE_DATA, exist_ok=True)
     cats, methods = [], Counter()
     for c in cfg["categories"]:
@@ -44,6 +48,8 @@ def build_site_data(log=print):
                  "pack": ", ".join(p.title() for p in c.get("pack", [])) or c.get("planned_pack", "Core only"),
                  "total": totals.get(c["name"], 0)}
         if has_data:
+            if snapshots.get(slug):
+                entry["mapped"] = snapshots[slug]
             with open(os.path.join(TOOLS_DIR, slug + ".json"), encoding="utf-8") as f:
                 tools = json.load(f)
             entry["total"] = entry["total"] or len(tools)
@@ -78,7 +84,11 @@ def build_site_data(log=print):
     if os.path.exists(PROPOSALS):
         with open(PROPOSALS, encoding="utf-8") as f:
             proposals = (yaml.safe_load(f) or {}).get("proposals", [])
+    mapped_on = sorted(c["mapped"] for c in cats if c.get("mapped"))
     index = {
+        # "snapshot" is when the data was read, from data/snapshots.json; "built" is only when this
+        # file was generated, which changes on every rebuild even if the data didn't.
+        "snapshot": {"first": mapped_on[0], "last": mapped_on[-1]} if mapped_on else None,
         "built": __import__("datetime").date.today().isoformat(),
         "catalog_total": sum(totals.values()) or None,
         "cats": cats,

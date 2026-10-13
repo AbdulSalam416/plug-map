@@ -138,6 +138,22 @@
       layerTitle: layerTitle,
       mapped: index.cats.filter(function (c) { return c.s === 'mapped'; }) };
   }
+  // "2026-10-11" -> "11 Oct 2026", without Date(), which can shift the day across time zones.
+  var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  function fmtDay(iso) {
+    var p = (iso || '').split('-');
+    return p.length === 3 ? +p[2] + ' ' + MONTHS[+p[1] - 1] + ' ' + p[0] : '';
+  }
+  // When the mapped categories were read: one day, or a range once categories are mapped on different days.
+  function snapshotText(snap) {
+    if (!snap) { return ''; }
+    return snap.first === snap.last ? fmtDay(snap.last) : fmtDay(snap.first) + ' – ' + fmtDay(snap.last);
+  }
+  function snapshotTag(text, href) {
+    return h(href ? 'a' : 'span', { class: 'snapshot', href: href || null,
+      title: 'When the repositories were read. Every claim is pinned to the commit read then.' },
+      h('span', { class: 'snapshot-dot', 'aria-hidden': 'true' }), text);
+  }
   function layerName(k) { return D.layerTitle[D.V[k].layer] || D.V[k].layer; }
   function coverage(ts) {
     return {
@@ -153,6 +169,7 @@
     var idx = D.raw, m = idx.methods || {};
     var claims = (m.code || 0) + (m.dependency || 0) + (m.readme || 0);
     add(main, h('section', { class: 'hero' },
+      idx.snapshot ? snapshotTag('Data snapshot · ' + snapshotText(idx.snapshot) + ' · ' + fmt(D.tools.length) + ' tools', '#/about') : null,
       h('h1', null, 'Which sustainability tools can exchange data?'),
       h('p', { class: 'lede' }, 'Plug Map reads each tool’s code, dependency files and README, and records which data formats, protocols, standards and data sources it reads, writes, speaks or pulls. Every fact links to where it was found. Categories of the catalog are mapped one at a time.')));
     add(main, stats([
@@ -238,6 +255,7 @@
     add(main, h('section', { class: 'page-head' },
       h('span', { class: 'eyebrow' }, 'Category · ' + meta.pack + ' pack'),
       h('h1', null, meta.n),
+      meta.mapped ? snapshotTag('Mapped ' + fmtDay(meta.mapped)) : null,
       h('p', null, cv.read + ' of ' + meta.total + ' catalog projects read. The rest could not be cloned (moved, private or not a git host).')));
     add(main, stats([
       { v: pct(cv.plug, cv.read), l: 'show what data they use' },
@@ -523,13 +541,14 @@
       h('ul', null,
         h('li', null, h('b', null, 'Plug'), ': a specific format, protocol, standard, data source or ecosystem. General formats (CSV, JSON, YAML, Excel and similar) are shown on tool pages but not counted.'),
         h('li', null, h('b', null, 'Upstream / downstream'), ': tools that write what this one reads, or read what it writes, from calls in their own code (not tests or examples). Matches on rarer formats rank higher.'),
+        h('li', null, h('b', null, 'Data snapshot'), ': the day a category’s repositories were read. Each claim links to the commit read that day, so it stays checkable after the tool changes. Categories are re-mapped from time to time, so the date can differ between categories.'),
         h('li', null, h('b', null, 'Same variable names'), ': for NetCDF, Zarr and HDF5, Plug Map also records the CF standard names, ERA5 variable names and CF conventions in the code of the file that reads or writes. Two tools that share them are more likely to really fit together than two that only share a format, so they are listed first. Names elsewhere in a tool’s code are not seen, so a missing match doesn’t mean the tools don’t fit.'),
         h('li', null, 'Claims are machine-made. A spot check of code claims found them accurate, but a README mention can be loose. Each claim shows its evidence so you can judge.')),
       h('h2', null, 'Licence and citation'),
       h('p', null, 'The data is published under ', h('a', { href: 'https://creativecommons.org/licenses/by/4.0/' }, 'CC BY 4.0'),
         ' and the code under the MIT licence. Star counts and last-commit dates come from ', h('a', { href: 'https://ecosyste.ms' }, 'ecosyste.ms'),
         ' (CC BY-SA 4.0); evidence quotes come from each tool’s own repository. To cite Plug Map, use its CITATION.cff and give the data build date.'),
-      h('p', { class: 'small' }, 'Plug Map by AbdulSalam416, CC BY 4.0. Data built ' + (D.raw.built || '') + '.')));
+      h('p', { class: 'small' }, 'Plug Map by AbdulSalam416, CC BY 4.0. Data snapshot ' + snapshotText(D.raw.snapshot) + '.')));
   }
 
   // ---------- shell: theme toggle and mobile menu ----------
@@ -569,7 +588,7 @@
   }
   getJSON('data/index.json').then(function (index) {
     var built = document.getElementById('built');
-    if (index.built) { built.textContent = ' · data built ' + index.built; }
+    if (index.snapshot) { built.textContent = ' · data snapshot ' + snapshotText(index.snapshot); }
     var mapped = index.cats.filter(function (c) { return c.s === 'mapped'; });
     return Promise.all(mapped.map(function (c) { return getJSON('data/' + c.slug + '.json'); })).then(function (files) {
       D = prep(index, files);

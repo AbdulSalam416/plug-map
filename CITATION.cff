@@ -1,7 +1,8 @@
 cff-version: 1.2.0
 message: >-
   If you use Plug Map's data or software, please cite it as below and say
-  which data build you used (the "built" date in site/data/index.json).
+  which data snapshot you used (the date shown on the site, from
+  data/snapshots.json).
 type: dataset
 title: "Plug Map: which open-source sustainability tools can exchange data"
 abstract: >-

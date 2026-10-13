@@ -190,4 +190,4 @@ To update the live site, re-run locally, commit `data/` and `site/data/`, and pu
 
 ## Citing Plug Map
 
-Use [`CITATION.cff`](CITATION.cff); GitHub shows it as "Cite this repository". Please say which data build you used: the `built` date in `site/data/index.json`.
+Use [`CITATION.cff`](CITATION.cff); GitHub shows it as "Cite this repository". Please say which data snapshot you used: the date shown on the site, recorded per category in `data/snapshots.json`.

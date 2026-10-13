@@ -48,6 +48,10 @@ All catalog projects in the category, including ones that couldn't be read.
 
 Declared package names aren't checked against the registry, so `pkg:pypi/x` means "the manifest says x", not necessarily "x is on PyPI".
 
+## `data/snapshots.json`
+
+The date each category was last mapped, i.e. when its repositories were read: `{"<slug>": "YYYY-MM-DD"}`. Written by `python -m plugmap run`. The site shows it as the data snapshot. Cite this date, not the date the site files were generated.
+
 ## `data/catalog_counts.json`
 
 Number of catalog projects per category at the last catalog fetch. Used when the site is rebuilt offline.
@@ -56,7 +60,7 @@ Number of catalog projects per category at the last catalog fetch. Used when the
 
 Compact versions for the browser, made by `python -m plugmap site`.
 
-- `index.json`: `built`, `catalog_total`, `cats` (`n` name, `slug`, `s` status, `pack`, `total`, `read`), `vocab` (`id → {l label, k kind, layer}`), `layers`, `methods` (claim counts), `proposed`.
+- `index.json`: `snapshot` (`first`, `last`: the earliest and latest mapping dates), `built` (when this file was generated; not the data date), `catalog_total`, `cats` (`n` name, `slug`, `s` status, `pack`, `total`, `read`, `mapped`), `vocab` (`id → {l label, k kind, layer}`), `layers`, `methods` (claim counts), `proposed`.
 - `<slug>.json`: `{category, tools: [...]}`, one entry per tool that was read. Keys are shortened versions of the fields above.
 
 Tool keys:

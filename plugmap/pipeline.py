@@ -1,9 +1,11 @@
 """Run one category end to end: select -> harvest -> extract -> write claims and tool records.
 
-Outputs (both committed, so the site works without re-running):
+Outputs (all committed, so the site works without re-running):
     data/claims/<slug>.jsonl   one claim per line (the core dataset)
     data/tools/<slug>.json     one record per tool in the category
+    data/snapshots.json        the date each category was mapped
 """
+import datetime
 import json
 import os
 import time
@@ -12,7 +14,7 @@ from . import catalog, harvest
 from .extract import code as code_reader
 from .extract import deps as deps_reader
 from .extract import readme as readme_reader
-from .paths import CLAIMS_DIR, TOOLS_DIR, category_entry, slugify
+from .paths import CLAIMS_DIR, SNAPSHOTS, TOOLS_DIR, category_entry, slugify
 from .purl import from_repo_url, purl_for
 from .vocab import Vocabulary
 
@@ -30,6 +32,18 @@ def extract_tool(vocab, repo_dir, files, tool_name):
     code_claims, nfiles = code_reader.claims(vocab, repo_dir)
     found += [c for c in code_claims if c["term"] not in home]
     return found, nfiles
+
+
+def record_snapshot(slug, day=None):
+    """Record in data/snapshots.json that this category was mapped today (or on `day`)."""
+    snaps = {}
+    if os.path.exists(SNAPSHOTS):
+        with open(SNAPSHOTS, encoding="utf-8") as f:
+            snaps = json.load(f)
+    snaps[slug] = day or datetime.date.today().isoformat()
+    with open(SNAPSHOTS, "w", encoding="utf-8") as f:
+        json.dump(snaps, f, indent=1, sort_keys=True)
+        f.write("\n")
 
 
 def run_category(name, refresh=False, workers=12, log=print):
@@ -74,6 +88,7 @@ def run_category(name, refresh=False, workers=12, log=print):
             tools.append(rec)
     with open(os.path.join(TOOLS_DIR, slug + ".json"), "w", encoding="utf-8") as f:
         json.dump(tools, f, indent=1, ensure_ascii=False)
+    record_snapshot(slug)
     read = sum(t["read"] for t in tools)
     log(f"  {read}/{len(tools)} tools read, {nclaims} claims -> data/claims/{slug}.jsonl")
     warned = sum(1 for t in tools if t.get("warning"))

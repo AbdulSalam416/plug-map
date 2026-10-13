@@ -11,6 +11,8 @@ PROPOSALS = os.path.join(VOCAB_DIR, "proposals.yml")
 DATA_DIR = os.path.join(ROOT, "data")
 CLAIMS_DIR = os.path.join(DATA_DIR, "claims")
 TOOLS_DIR = os.path.join(DATA_DIR, "tools")
+# When each category was last mapped (its repositories read): {slug: "YYYY-MM-DD"}.
+SNAPSHOTS = os.path.join(DATA_DIR, "snapshots.json")
 SITE_DATA = os.path.join(ROOT, "site", "data")
 # Cloned repositories and the catalog checkout. Large, never committed.
 CACHE = os.environ.get("PLUGMAP_CACHE", os.path.join(ROOT, "cache"))

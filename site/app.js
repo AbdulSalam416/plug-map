@@ -44,7 +44,6 @@
     el.appendChild(c.nodeType ? c : document.createTextNode(String(c)));
   }
   function fmt(n) { return Number(n || 0).toLocaleString('en'); }
-  function pct(a, b) { return b ? Math.round(100 * a / b) + '%' : '–'; }
   function bar(frac, color, cls) {
     var w = Math.max(0, Math.min(100, Math.round(frac * 1000) / 10));
     return h('span', { class: cls || 'track' }, h('span', { class: 'fill ' + color, style: 'width:' + w + '%' }));
@@ -150,11 +149,6 @@
     });
     return nav;
   }
-  function stats(list) {
-    return h('section', { class: 'stats', 'aria-label': 'Headline numbers' }, list.map(function (s) {
-      return h('div', { class: 'stat' }, h('div', { class: 'stat-l' }, s.l), h('div', { class: 'stat-v' }, s.v));
-    }));
-  }
 
   // ---------- data preparation ----------
   function prep(index, catFiles) {
@@ -209,17 +203,14 @@
     if (!snap) { return ''; }
     return snap.first === snap.last ? fmtDay(snap.last) : fmtDay(snap.first) + ' – ' + fmtDay(snap.last);
   }
-  function snapshotTag(text, href) {
-    return h(href ? 'a' : 'span', { class: 'snapshot', href: href || null,
-      title: 'When the repositories were read. Every claim is pinned to the commit read then.' },
-      h('span', { class: 'snapshot-dot', 'aria-hidden': 'true' }), text);
-  }
   // Labels for a link between two tools, strongest first (see neighbours() and linkStrength()).
   var tierName = ['Same variable names', 'Domain format', 'Container format only'];
   var tierNote = [
     'They use the same variable names or conventions in the files that read and write this format.',
     'The format fixes what the data means, not only how it is stored.',
     'They share a file format, but nothing found shows the contents line up.'];
+  // Strongest evidence first, in the data colours: green for a name match, blue for a domain format, grey for a container.
+  var tierTone = ['green', 'blue', 'grey'];
   // Every directed link in the mapped data (one tool writes a format in its own code, another reads
   // it in its own code), labelled the same way as on tool pages. Counted once per pair of tools.
   function linkStrength() {
@@ -251,63 +242,38 @@
     return out;
   }
   function layerName(k) { return D.layerTitle[D.V[k].layer] || D.V[k].layer; }
-  function coverage(ts) {
-    return {
-      read: ts.length,
-      plug: ts.filter(function (t) { return t.plugs.size > 0; }).length,
-      dir: ts.filter(function (t) { return t.reads.size + t.writes.size > 0; }).length,
-      claims: ts.reduce(function (a, t) { return a + t.cl.length; }, 0)
-    };
-  }
 
   // ---------- overview ----------
   function renderOverview() {
     var idx = D.raw, m = idx.methods || {};
     var claims = (m.code || 0) + (m.dependency || 0) + (m.readme || 0);
+    var common = Object.keys(D.df).sort(function (a, b) { return D.df[b] - D.df[a]; }).slice(0, 10);
     add(main, h('section', { class: 'hero' },
-      idx.snapshot ? snapshotTag('Data snapshot · ' + snapshotText(idx.snapshot) + ' · ' + fmt(D.tools.length) + ' tools', '#/about') : null,
       h('h1', null, 'Which open-source sustainability tools share data formats?'),
-      h('p', { class: 'lede' }, 'Plug Map scans the public code, dependency files and README of each tool in the OpenSustain.tech catalog for known data formats, protocols, standards and data sources, and links every match to where it was found. It shows shared formats, not verified compatibility.')));
-    add(main, stats([
-      { v: idx.catalog_total ? fmt(idx.catalog_total) : '–', l: 'projects in the catalog' },
-      { v: D.mapped.length + ' of ' + idx.cats.length, l: 'categories mapped so far' },
-      { v: fmt(D.tools.length), l: 'tools read in mapped categories' },
-      { v: fmt(claims), l: 'claims, each with evidence' }
-    ]));
-    var common = Object.keys(D.df).sort(function (a, b) { return D.df[b] - D.df[a]; }).slice(0, 18);
-    if (common.length) {
-      add(main, h('section', { class: 'stack', style: 'gap:12px' },
-        h('div', { class: 'head-row' }, h('h2', null, 'Found most often'),
-          h('span', { class: 'small muted' }, 'Specific formats, protocols, standards, sources and ecosystems, by number of tools.')),
-        h('ul', { class: 'plug-cloud' }, common.map(function (k) {
-          return h('li', { class: 'plug-chip' }, mark(k), h('span', { class: 'plug-chip__name' }, D.V[k].l),
-            h('span', { class: 'chip-count' }, plural(D.df[k], 'tool')));
-        }))));
-    }
-    add(main, strengthPanel());
+      h('p', { class: 'lede' }, 'Plug Map reads each tool’s code and shows the formats it reads and writes, with evidence. Shared formats, not verified compatibility.'),
+      common.length ? h('p', { class: 'hero-marks', 'aria-label': 'Found most often: ' + common.map(function (k) { return D.V[k].l; }).join(', ') },
+        common.map(function (k) { var el = mark(k); el.title = D.V[k].l; return el; })) : null,
+      h('p', { class: 'hero-meta' }, plural(D.tools.length, 'tool') + ' · ' + plural(claims, 'claim'),
+        idx.snapshot ? [' · ', h('a', { href: '#/about' }, 'snapshot ' + snapshotText(idx.snapshot))] : null)));
 
-    var cards = idx.cats.map(function (c) {
-      if (c.s !== 'mapped') {
-        return h('div', { class: 'card off' },
-          h('span', { class: 'card-title' }, h('span', null, c.n), h('span', { class: 'badge ' + c.s }, c.s === 'next' ? 'NEXT' : 'QUEUED')),
-          h('span', { class: 'small muted' }, fmt(c.total) + ' projects · ' + c.pack + ' pack'));
-      }
-      var cv = coverage(D.byCat[c.n] || []);
-      return h('a', { class: 'card', href: catHref(c.slug) },
-        h('span', { class: 'card-title' }, h('span', null, c.n), h('span', { class: 'badge mapped' }, 'MAPPED')),
-        h('span', { class: 'small muted' }, cv.read + ' of ' + c.total + ' tools read · ' + c.pack + ' pack'),
-        h('span', { class: 'meter' },
-          h('span', { class: 'meter-label' }, h('span', null, 'Shows what data it uses'), h('span', { class: 'num' }, pct(cv.plug, cv.read))),
-          bar(cv.read ? cv.plug / cv.read : 0, 'green'),
-          h('span', { class: 'meter-label' }, h('span', null, 'Read/write direction known'), h('span', { class: 'num' }, pct(cv.dir, cv.read))),
-          bar(cv.read ? cv.dir / cv.read : 0, 'blue')),
-        h('span', { class: 'cta' }, 'Open category'));
-    });
+    // Mapped categories are the way in; the rest are named once, in rollout order.
+    var waiting = idx.cats.filter(function (c) { return c.s !== 'mapped'; });
+    var next = waiting.filter(function (c) { return c.s === 'next'; });
     add(main, h('section', { class: 'stack' },
-      h('div', { class: 'head-row' }, h('h2', null, 'Catalog categories'),
-        h('span', { class: 'small muted' }, 'Mapped in rollout order. Each group shares a vocabulary pack.')),
-      h('div', { class: 'cards' }, cards)));
+      h('h2', null, 'Categories'),
+      h('div', { class: 'cat-list' }, D.mapped.map(function (c) {
+        return h('a', { class: 'cat-row', href: catHref(c.slug) },
+          h('span', { class: 'cat-name' }, c.n),
+          h('span', { class: 'cat-count' }, plural((D.byCat[c.n] || []).length, 'tool')));
+      })),
+      waiting.length ? h('p', { class: 'small muted' }, next.length
+        ? 'Next: ' + next.map(function (c) { return c.n; }).join(', ') + (waiting.length > next.length ? ' · ' + (waiting.length - next.length) + ' more queued' : '')
+        : waiting.length + ' more categories queued') : null));
+  }
 
+  // The method and the overall picture, shown on the About page.
+  function dataSections() {
+    var idx = D.raw, m = idx.methods || {};
     // Bridges: specific terms used in two or more mapped categories.
     var counts = {};
     D.mapped.forEach(function (c) {
@@ -322,13 +288,17 @@
     var bridges = h('section', { class: 'panel grow' },
       h('h2', null, 'Bridges between categories'),
       h('p', { class: 'small muted' }, 'Formats, standards and sources used in more than one mapped category, with the number of tools in each.'),
-      multi.length ? multi.map(function (k) {
-        return h('div', { class: 'bridge' }, termName(k, null, { style: 'font-weight:500' }),
-          h('span', { class: 'bridge-cells' }, D.mapped.map(function (c) {
-            var n = counts[k][c.n] || 0;
-            return h('span', { class: 'cell' }, h('span', { class: 'muted' }, c.n), bar(n / maxCell, 'green'), h('span', { class: 'num' }, n));
-          })));
-      }) : h('p', { class: 'small muted' }, 'Bridges appear once two or more categories are mapped.'));
+      multi.length ? h('div', { class: 'matrix', role: 'table', 'aria-label': 'Tools using each format, by category', style: '--cols:' + D.mapped.length },
+        h('div', { class: 'matrix-row matrix-head', role: 'row' }, h('span', { role: 'columnheader' }, 'Shared by'),
+          D.mapped.map(function (c) { return h('span', { role: 'columnheader' }, c.n); })),
+        multi.map(function (k) {
+          return h('div', { class: 'matrix-row', role: 'row' }, h('span', { role: 'rowheader' }, termName(k, null, { style: 'font-weight:500' })),
+            D.mapped.map(function (c) {
+              var n = counts[k][c.n] || 0;
+              return h('span', { class: 'matrix-cell' + (n ? '' : ' zero'), role: 'cell' },
+                bar(n / maxCell, 'green'), h('span', { class: 'num' }, n));
+            }));
+        })) : h('p', { class: 'small muted' }, 'Bridges appear once two or more categories are mapped.'));
 
     var mmax = Math.max(m.code || 0, m.dependency || 0, m.readme || 0, 1);
     var methodRow = function (label, n) {
@@ -350,7 +320,7 @@
         })),
         h('span', null, h('b', null, String(open)), ' AI-proposed terms awaiting review'),
         h('a', { class: 'btn', href: '#/vocabulary' }, 'Review the vocabulary')));
-    add(main, h('div', { class: 'row-wrap' }, bridges, how));
+    return [strengthPanel(), h('div', { class: 'row-wrap' }, bridges, how)];
   }
 
   // How much the evidence shows for the links between tools, across everything mapped so far.
@@ -362,30 +332,35 @@
       return (p > 0 && p < 1 ? p.toFixed(1) : Math.round(p)) + '%';
     };
     var top = function (terms, max) {
-      return Object.keys(terms).sort(function (a, b) { return terms[b] - terms[a]; }).slice(0, max)
-        .map(function (k) { return D.V[k].l; }).join(', ');
+      return Object.keys(terms).sort(function (a, b) { return terms[b] - terms[a]; }).slice(0, max);
     };
-    var row = function (tier, detail) {
-      var n = s.n[tier];
-      return h('div', { class: 'stack', style: 'gap:4px', title: tierNote[tier] },
-        h('span', { class: 'meter-label', style: 'font-size:14px' },
-          h('span', null, h('b', null, tierName[tier]), ' · ', tierNote[tier]),
-          h('span', { class: 'num' }, fmt(n) + ' · ' + share(n))),
-        bar(s.total ? n / s.total : 0, 'ink'),
-        n && detail ? h('span', { class: 'tiny muted' }, detail) : null);
-    };
+    var names = function (keys) { return keys.map(function (k) { return D.V[k].l; }).join(', '); };
+    var via = [top(s.terms[0], 3), top(s.terms[1], 4), top(s.terms[2], 4)];
+    var detail = [
+      'Through ' + names(via[0]) + ' files with the same ' +
+        Object.keys(s.profiles).map(function (id) { return (D.raw.profiles || {})[id] || id; }).join(' or '),
+      'Through ' + names(via[1]),
+      'Mostly through ' + names(via[2])];
     var cats = D.mapped.map(function (c) { return c.n; });
-    return h('section', { class: 'panel', style: 'gap:12px' },
-      h('div', { class: 'head-row' }, h('h2', null, 'How strong are the links between tools?'),
-        h('a', { class: 'small', href: '#/about' }, 'How links are labelled')),
+    var label = s.total ? tierName.map(function (t, i) { return t + ': ' + share(s.n[i]); }).join(', ') : '';
+    return h('section', { class: 'panel strength' },
+      h('h2', null, 'How strong are the links between tools?'),
       h('p', { class: 'small muted' }, s.total
         ? fmt(s.total) + ' links: one tool writes a format in its own code and another reads it in theirs. A shared format shows two tools could fit together, not that they do, so each link is labelled by how much the evidence shows.'
         : 'No links yet: they appear once tools in the mapped categories write and read the same format in their code.'),
       s.total ? [
-        row(0, 'Through ' + top(s.terms[0], 3) + ' files with the same ' +
-          Object.keys(s.profiles).map(function (id) { return (D.raw.profiles || {})[id] || id; }).join(' or ')),
-        row(1, 'Through ' + top(s.terms[1], 4)),
-        row(2, 'Mostly through ' + top(s.terms[2], 4))] : null,
+        h('div', { class: 'spectrum', role: 'img', 'aria-label': label }, s.n.map(function (n, i) {
+          return n ? h('span', { class: 'spectrum-seg fill ' + tierTone[i], style: 'flex-grow:' + n }) : null;
+        })),
+        h('div', { class: 'tiers' }, tierName.map(function (t, i) {
+          return h('div', { class: 'tier', title: tierNote[i] },
+            h('span', { class: 'tier-name' }, h('span', { class: 'swatch fill ' + tierTone[i], 'aria-hidden': 'true' }), t),
+            h('span', { class: 'tier-share' }, share(s.n[i])),
+            h('span', { class: 'tier-count' }, plural(s.n[i], 'link')),
+            h('span', { class: 'small muted' }, tierNote[i]),
+            s.n[i] ? h('span', { class: 'tier-via' }, h('span', { class: 'marks', 'aria-hidden': 'true' }, via[i].map(function (k) { return mark(k, 'sm'); })),
+              h('span', { class: 'tiny muted' }, detail[i])) : null);
+        }))] : null,
       h('p', { class: 'tiny muted' }, 'Counted across the ' + plural(cats.length, 'mapped category', 'mapped categories') + ' (' + cats.join(', ') +
         '), and recounted whenever a category is added.'));
   }
@@ -394,75 +369,40 @@
   function renderCategory(meta) {
     var ts = D.byCat[meta.n] || [];
     var st = catState[meta.slug] = catState[meta.slug] || { sub: 'all', q: '', limit: PAGE };
-    var cv = coverage(ts), V = D.V;
+    var V = D.V;
     add(main, crumbs([{ label: meta.n }]));
     add(main, h('section', { class: 'page-head' },
-      h('span', { class: 'eyebrow' }, 'Category · ' + meta.pack + ' pack'),
       h('h1', null, meta.n),
-      meta.mapped ? snapshotTag('Mapped ' + fmtDay(meta.mapped)) : null,
-      h('p', null, cv.read + ' of ' + meta.total + ' catalog projects read. The rest could not be cloned (moved, private or not a git host).')));
-    add(main, stats([
-      { v: pct(cv.plug, cv.read), l: 'show what data they use' },
-      { v: pct(cv.dir, cv.read), l: 'have a known read/write direction' },
-      { v: fmt(cv.claims), l: 'claims with evidence' },
-      { v: fmt(cv.read), l: 'tools read' }
-    ]));
+      h('p', { title: 'The rest could not be cloned (moved, private or not a git host).' },
+        ts.length + ' of ' + meta.total + ' catalog tools read' + (meta.mapped ? ' · mapped ' + fmtDay(meta.mapped) : ''))));
 
-    var rd = {}, wr = {}, use = {};
+    var rd = {}, wr = {};
     ts.forEach(function (t) {
       t.reads.forEach(function (k) { rd[k] = (rd[k] || 0) + 1; });
       t.writes.forEach(function (k) { wr[k] = (wr[k] || 0) + 1; });
-      t.plugs.forEach(function (k) { use[k] = (use[k] || 0) + 1; });
     });
     var tot = function (k) { return (rd[k] || 0) + (wr[k] || 0); };
-    var fkeys = Object.keys(Object.assign({}, rd, wr)).sort(function (a, b) { return tot(b) - tot(a); }).slice(0, 12);
+    var fkeys = Object.keys(Object.assign({}, rd, wr)).sort(function (a, b) { return tot(b) - tot(a); }).slice(0, 8);
     var fmax = 1;
     fkeys.forEach(function (k) { fmax = Math.max(fmax, rd[k] || 0, wr[k] || 0); });
-    add(main, h('section', { class: 'panel' },
-      h('div', { class: 'head-row' }, h('h2', null, 'Who reads and who writes'),
-        h('span', { class: 'legend' },
-          h('span', null, h('span', { class: 'swatch blue' }), 'Tools that read it'),
-          h('span', null, h('span', { class: 'swatch green' }), 'Tools that write it'))),
-      h('p', { class: 'small muted' }, 'Found from calls in each tool’s own code, such as to_netcdf or read_parquet; calls only in tests or examples are left out. So are general formats like CSV and JSON, which say little about compatibility.'),
+    // A bar that grows out from the centre line, leaving room for its count at the outer end.
+    var dvBar = function (frac, color) {
+      return h('span', { class: 'fill dv-fill ' + color, style: 'width:calc((100% - 3rem) * ' + Math.round(frac * 1000) / 1000 + ')' });
+    };
+    add(main, h('section', { class: 'section' },
+      h('h2', null, 'Who reads and who writes'),
+      h('p', { class: 'small muted' }, 'Number of tools, from calls in each tool’s own code.'),
       fkeys.length ? [h('div', { class: 'dv-head', 'aria-hidden': 'true' }, h('span', null, ''), h('span', null, 'reads'), h('span', null, 'writes'))].concat(fkeys.map(function (k) {
         return h('div', { class: 'dv' },
-          h('span', { class: 'dv-name' }, slot(k),
-            h('span', { class: 'stack', style: 'gap:0;min-width:0' }, h('span', { style: 'font-weight:500' }, V[k].l), h('span', { class: 'tiny muted' }, layerName(k)))),
-          h('span', { class: 'dv-left' }, h('span', { class: 'num small' }, rd[k] || 0), bar((rd[k] || 0) / fmax, 'blue', 'dv-bar')),
-          h('span', { class: 'dv-right' }, bar((wr[k] || 0) / fmax, 'green', 'dv-bar'), h('span', { class: 'num small' }, wr[k] || 0)));
+          h('span', { class: 'dv-name' }, slot(k), h('span', null, V[k].l)),
+          h('span', { class: 'dv-left' }, h('span', { class: 'num small' }, rd[k] || 0), dvBar((rd[k] || 0) / fmax, 'blue')),
+          h('span', { class: 'dv-right' }, dvBar((wr[k] || 0) / fmax, 'green'), h('span', { class: 'num small' }, wr[k] || 0)));
       })) : h('p', { class: 'small muted' }, 'No read or write calls found yet.')));
 
-    var panel = function (title, kinds) {
-      var keys = Object.keys(use).filter(function (k) { return kinds.indexOf(V[k].k) >= 0; })
-        .sort(function (a, b) { return use[b] - use[a]; }).slice(0, 6);
-      var mx = keys.length ? use[keys[0]] : 1;
-      return h('section', { class: 'panel', style: 'gap:10px' }, h('h3', null, title),
-        keys.length ? keys.map(function (k) {
-          return h('span', { class: 'rank' }, h('span', { class: 'rank-name' }, slot(k),
-              h('span', { class: 'stack', style: 'gap:0;flex:1;min-width:0' }, h('span', null, V[k].l), bar(use[k] / mx, 'grey'))),
-            h('span', { class: 'num' }, use[k]));
-        }) : h('span', { class: 'small muted' }, 'None found in this category yet.'));
-    };
-    add(main, h('div', { class: 'trio' },
-      panel('Data sources pulled', ['source']),
-      panel('Code ecosystems built on', ['ecosystem']),
-      panel('Protocols and standards', ['protocol', 'standard'])));
-
-    // Tool list with sub-category chips and search. Only the list re-renders on input, so focus stays put.
+    // Tool list with a sub-category filter and search. Only the list re-renders on input, so focus stays put.
     var subCounts = {};
     ts.forEach(function (t) { subCounts[t.sc] = (subCounts[t.sc] || 0) + 1; });
     var listBox = h('div', { class: 'stack' });
-    var chipsBox = h('div', { class: 'chips', role: 'group', 'aria-label': 'Filter by sub-category' });
-    function drawChips() {
-      chipsBox.textContent = '';
-      var subs = [['all', 'All', ts.length]].concat(Object.keys(subCounts)
-        .sort(function (a, b) { return subCounts[b] - subCounts[a]; }).map(function (s) { return [s, s, subCounts[s]]; }));
-      subs.forEach(function (s) {
-        add(chipsBox, h('button', { type: 'button', class: 'chip', 'aria-pressed': st.sub === s[0] ? 'true' : 'false',
-          onclick: function () { st.sub = s[0]; st.limit = PAGE; drawChips(); drawList(); } },
-          s[1], h('span', { class: 'chip-count' }, s[2])));
-      });
-    }
     function drawList() {
       listBox.textContent = '';
       var q = st.q.trim().toLowerCase();
@@ -477,27 +417,28 @@
       if (rows.length) {
         add(listBox, h('div', { class: 'list' }, rows.slice(0, st.limit).map(function (t) {
           var keys = Array.from(t.plugs).sort(function (a, b) { return (D.df[a] || 0) - (D.df[b] || 0); });
-          var labels = keys.slice(0, 4).map(function (k) { return V[k].l; });
           return h('a', { class: 'list-row', href: toolHref(t) },
             h('span', { class: 'stack', style: 'gap:0;min-width:0' }, h('span', { class: 'name' }, t.n),
-              h('span', { class: 'small muted' }, t.sc + (labels.length ? ' · ' + labels.join(', ') : ''))),
-            h('span', { class: 'marks', 'aria-hidden': 'true' }, keys.slice(0, 5).map(function (k) { return mark(k, 'sm'); }),
-              keys.length > 5 ? h('span', { class: 'marks-more' }, '+' + (keys.length - 5)) : null),
-            h('span', { class: 'meta' }, h('span', null, plural(t.plugs.size, 'plug')),
-              h('span', null, 'reads ' + t.reads.size + ' · writes ' + t.writes.size)));
+              h('span', { class: 'small muted' }, t.sc)),
+            h('span', { class: 'marks', title: keys.slice(0, 5).map(function (k) { return V[k].l; }).join(', ') },
+              keys.slice(0, 5).map(function (k) { return mark(k, 'sm'); }),
+              keys.length > 5 ? h('span', { class: 'marks-more' }, '+' + (keys.length - 5)) : null));
         })));
       }
       if (rows.length > st.limit) {
         add(listBox, h('button', { type: 'button', class: 'btn ghost', onclick: function () { st.limit += PAGE; drawList(); } }, 'Show more tools'));
       }
     }
-    drawChips();
     drawList();
-    var search = h('input', { id: 'toolSearch', class: 'search', type: 'search', value: st.q, placeholder: 'Name, format or description',
-      oninput: function (e) { st.q = e.target.value; st.limit = PAGE; drawList(); } });
-    add(main, h('section', { class: 'panel', style: 'gap:12px' },
-      h('h2', null, 'Tools'), chipsBox,
-      h('label', { for: 'toolSearch', class: 'field-label' }, 'Search tools in this category'), search, listBox));
+    var search = h('input', { id: 'toolSearch', class: 'search', type: 'search', value: st.q, placeholder: 'Search name, format or description',
+      'aria-label': 'Search tools in this category', oninput: function (e) { st.q = e.target.value; st.limit = PAGE; drawList(); } });
+    var subs = Object.keys(subCounts).sort(function (a, b) { return subCounts[b] - subCounts[a]; });
+    var filter = h('select', { class: 'search select', 'aria-label': 'Filter by sub-category',
+      onchange: function (e) { st.sub = e.target.value; st.limit = PAGE; drawList(); } },
+      h('option', { value: 'all', selected: st.sub === 'all' }, 'All sub-categories'),
+      subs.map(function (sc) { return h('option', { value: sc, selected: st.sub === sc }, sc + ' (' + subCounts[sc] + ')'); }));
+    add(main, h('section', { class: 'section' },
+      h('h2', null, 'Tools'), h('div', { class: 'toolbar' }, search, filter), listBox));
   }
 
   // ---------- tool ----------
@@ -537,16 +478,13 @@
     var V = D.V, meta = D.raw.cats.find(function (c) { return c.n === t.c; });
     add(main, crumbs([{ label: t.c, href: meta ? catHref(meta.slug) : '#/' }, { label: t.n }]));
     add(main, h('section', { class: 'page-head' },
-      h('span', { class: 'eyebrow' }, t.c + ' · ' + t.sc),
       h('h1', null, t.n),
       t.d ? h('p', null, t.d) : null,
       h('div', { class: 'facts' },
         h('a', { href: t.u, target: '_blank', rel: 'noopener' }, 'Repository'),
-        h('span', null, '★ ' + fmt(t.st)),
+        h('span', null, plural(t.st, 'star')),
         t.a ? h('span', null, 'last commit ' + t.a) : null,
-        t.k ? h('span', { class: 'mono tiny' }, 'read at ' + t.k.slice(0, 10)) : null),
-      h('div', { class: 'purl' }, h('span', { class: 'tiny muted' }, 'Package-URL'),
-        h('span', { class: 'mono' }, t.p || 'none yet'), t.pb ? h('span', { class: 'tiny muted' }, '(' + t.pb + ')') : null)));
+        t.p ? h('span', { class: 'mono tiny', title: 'Package-URL' + (t.pb ? ' (' + t.pb + ')' : '') + (t.k ? ', read at ' + t.k.slice(0, 10) : '') }, t.p) : null)));
 
     var methodLabel = { code: 'code', dependency: 'dependency', readme: 'README' };
     var byItem = {};
@@ -556,7 +494,7 @@
       e.methods[methodLabel[c.m] || c.m] = true;
       if (c.m === 'code') { if (!e.roles[c.r] || (e.roles[c.r].x && !c.x)) { e.roles[c.r] = c; } } else if (!e.other) { e.other = c; }
     });
-    var order = [['reads', 'Reads'], ['writes', 'Writes'], ['speaks', 'Speaks'], ['pulls', 'Pulls data from'], ['uses', 'Uses · direction not yet known']];
+    var order = [['reads', 'Reads'], ['writes', 'Writes'], ['speaks', 'Speaks'], ['pulls', 'Pulls data from'], ['uses', 'Also uses']];
     var rank = function (k) { return D.spec(k) ? 0 : 1; };
     var groups = order.map(function (o) {
       var role = o[0];
@@ -564,22 +502,20 @@
         return role === 'uses' ? Object.keys(byItem[k].roles).length === 0 : !!byItem[k].roles[role];
       }).sort(function (a, b) { return (rank(a) - rank(b)) || ((D.df[a] || 0) - (D.df[b] || 0)); });
       if (!keys.length) { return null; }
-      return h('div', { class: 'panel', style: 'gap:4px' },
-        h('h2', { style: 'margin-bottom:8px' }, o[1]),
+      return h('div', { class: 'section', style: 'gap:0' },
+        h('h2', null, o[1]),
         keys.map(function (k) {
           var c = role === 'uses' ? byItem[k].other : byItem[k].roles[role];
-          return h('div', { class: 'claim' }, mark(k, 'lg'),
+          return h('div', { class: 'claim', title: 'Found in ' + Object.keys(byItem[k].methods).join(', ') }, mark(k),
             h('div', { class: 'claim-body' },
               h('span', { class: 'claim-head' }, h('span', { class: 'label' }, V[k].l),
-                h('span', { class: 'tag' }, D.spec(k) ? layerName(k) : 'general format'),
-                h('span', { class: 'tag outline' }, Object.keys(byItem[k].methods).join(' · ')),
                 c.x ? h('span', { class: 'tag aux', title: 'Not counted as a direction: the call is not in the tool’s own code' }, 'only in ' + c.x) : null),
               evidence(t, c),
               c.pf ? h('span', { class: 'ev', title: 'Variable names and conventions in the code of the files that make this call' },
                 'In files with this call: ' + profileText(c.pf)) : null));
         }));
     }).filter(Boolean);
-    var left = h('section', { class: 'grow stack', style: 'gap:16px' },
+    var left = h('section', { class: 'grow stack', style: 'gap:40px' },
       groups.length ? groups : h('p', { class: 'muted' }, 'No formats, protocols or data sources detected yet for this tool. That usually means the vocabulary doesn’t cover what it uses yet; see Vocabulary.'));
 
     // Every link is a shared format with the direction found in code, but the evidence differs.
@@ -606,30 +542,36 @@
         // Name the formats that earned the label first, then rarer ones.
         var key = function (x) { return e.named[x] ? 0 : D.sem(x) ? 1 : 2; };
         e.via.sort(function (a, b) { return (key(a) - key(b)) || ((D.idf[b] || 0) - (D.idf[a] || 0)); });
-        e.via = e.via.map(function (x) { return V[x].l; });
+        e.keys = e.via;
+        e.via = e.keys.map(function (x) { return V[x].l; });
         return e;
       }).sort(function (a, b) { return (a.tier - b.tier) || (b.w - a.w) || (b.u.st - a.u.st); });
     }
     function side(title, note, verb, list, none) {
-      var counts = [0, 0, 0];
+      var counts = [0, 0, 0], rows = [], last = -1;
       list.forEach(function (e) { counts[e.tier]++; });
-      var summary = counts.map(function (n, i) { return n ? n + ' ' + tierName[i].toLowerCase() : null; }).filter(Boolean).join(' · ');
-      return h('section', { class: 'panel', style: 'gap:6px' },
+      // Grouped under the label each link earned, so the label is said once per group, not on every row.
+      list.slice(0, 5).forEach(function (e) {
+        if (e.tier !== last) {
+          last = e.tier;
+          rows.push(h('h3', { class: 'nb-tier', title: tierNote[e.tier] },
+            h('span', { class: 'swatch fill ' + tierTone[e.tier], 'aria-hidden': 'true' }), tierName[e.tier], h('span', { class: 'chip-count' }, counts[e.tier])));
+        }
+        rows.push(h('a', { class: 'nb', href: toolHref(e.u) }, h('span', { class: 'name' }, e.u.n),
+          h('span', { class: 'nb-via' }, h('span', { class: 'marks', 'aria-hidden': 'true' }, e.keys.slice(0, 3).map(function (k) { return mark(k, 'sm'); })),
+            h('span', { class: 'tiny muted' }, verb + ' ' + e.via.slice(0, 3).join(', ') + ' · ' + e.u.c)),
+          e.shared.length ? h('span', { class: 'tiny' }, 'Same ' + profileText(e.shared, 3)) : null));
+      });
+      return h('section', { class: 'section', style: 'gap:4px' },
         h('h2', null, title),
-        h('p', { class: 'small muted', style: 'margin-bottom:4px' }, note),
-        list.length ? h('p', { class: 'tiny' }, summary) : null,
-        list.length ? list.slice(0, 8).map(function (e) {
-          return h('a', { class: 'nb', href: toolHref(e.u) }, h('span', { class: 'name' }, e.u.n),
-            h('span', { class: 'tag' + (e.tier === 2 ? ' outline' : ''), title: tierNote[e.tier] }, tierName[e.tier]),
-            h('span', { class: 'tiny muted' }, verb + ' ' + e.via.slice(0, 3).join(', ') + ' · ' + e.u.c),
-            e.shared.length ? h('span', { class: 'tiny' }, 'Same ' + profileText(e.shared, 3)) : null);
-        }) : h('span', { class: 'small muted' }, none),
-        list.length > 8 ? h('span', { class: 'tiny muted' }, (list.length - 8) + ' more') : null);
+        h('p', { class: 'small muted' }, note),
+        list.length ? rows : h('span', { class: 'small muted' }, none),
+        list.length > 5 ? h('span', { class: 'tiny muted', style: 'padding-top:6px' }, (list.length - 5) + ' more') : null);
     }
-    var right = h('aside', { class: 'side stack', style: 'gap:16px' },
-      side('Upstream', 'Tools that write what this one reads, from calls in both tools’ code. Each link is labelled by how much the evidence shows: same variable names first, then domain formats, then shared containers.', 'writes', neighbours(t.reads, D.writersOf, 'reads', 'writes'), 'No upstream tools found yet.'),
-      side('Downstream', 'Tools that read what this one writes, ranked the same way.', 'reads', neighbours(t.writes, D.readersOf, 'writes', 'reads'), 'No downstream tools found yet.'));
-    add(main, h('div', { class: 'row-wrap' }, left, right));
+    var right = h('aside', { class: 'side stack', style: 'gap:40px' },
+      side('Upstream', 'Tools that write what this one reads.', 'writes', neighbours(t.reads, D.writersOf, 'reads', 'writes'), 'None found yet.'),
+      side('Downstream', 'Tools that read what this one writes.', 'reads', neighbours(t.writes, D.readersOf, 'writes', 'reads'), 'None found yet.'));
+    add(main, h('div', { class: 'row-wrap', style: 'gap:56px' }, left, right));
   }
 
   // ---------- vocabulary ----------
@@ -637,7 +579,6 @@
     var V = D.V, idx = D.raw, props = idx.proposed || [];
     add(main, crumbs([{ label: 'Vocabulary' }]));
     add(main, h('section', { class: 'page-head' },
-      h('span', { class: 'eyebrow' }, 'Reference'),
       h('h1', null, 'Vocabulary'),
       h('p', null, 'What Plug Map can recognise, kept as data files instead of code. The core layer applies to every category; packs add terms for one group of categories. New terms arrive as proposals and are added after a person reviews them.')));
 
@@ -725,6 +666,8 @@
         ' and the code under the MIT licence. Star counts and last-commit dates come from ', h('a', { href: 'https://ecosyste.ms' }, 'ecosyste.ms'),
         ' (CC BY-SA 4.0); evidence quotes come from each tool’s own repository. To cite Plug Map, use its CITATION.cff and give the data build date.'),
       h('p', { class: 'small' }, 'Plug Map by AbdulSalam416, CC BY 4.0. Data snapshot ' + snapshotText(D.raw.snapshot) + '.')));
+    add(main, h('section', { class: 'stack', style: 'gap:48px' },
+      h('h2', { class: 'section-title', id: 'data' }, 'The data so far'), dataSections()));
   }
 
   // ---------- shell: theme toggle and mobile menu ----------

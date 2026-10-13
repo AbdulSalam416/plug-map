@@ -170,8 +170,8 @@
     var claims = (m.code || 0) + (m.dependency || 0) + (m.readme || 0);
     add(main, h('section', { class: 'hero' },
       idx.snapshot ? snapshotTag('Data snapshot · ' + snapshotText(idx.snapshot) + ' · ' + fmt(D.tools.length) + ' tools', '#/about') : null,
-      h('h1', null, 'Which sustainability tools can exchange data?'),
-      h('p', { class: 'lede' }, 'Plug Map reads each tool’s code, dependency files and README, and records which data formats, protocols, standards and data sources it reads, writes, speaks or pulls. Every fact links to where it was found. Categories of the catalog are mapped one at a time.')));
+      h('h1', null, 'Which open-source sustainability tools share data formats?'),
+      h('p', { class: 'lede' }, 'Plug Map scans the public code, dependency files and README of each tool in the OpenSustain.tech catalog for known data formats, protocols, standards and data sources, and links every match to where it was found. It shows shared formats, not verified compatibility.')));
     add(main, stats([
       { v: idx.catalog_total ? fmt(idx.catalog_total) : '–', l: 'projects in the catalog' },
       { v: D.mapped.length + ' of ' + idx.cats.length, l: 'categories mapped so far' },

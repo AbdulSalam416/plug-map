@@ -93,7 +93,7 @@ def cmd_serve(a):
 
 
 def main(argv=None):
-    p = argparse.ArgumentParser(prog="python -m plugmap", description="Plug Map: which sustainability tools can exchange data.")
+    p = argparse.ArgumentParser(prog="python -m plugmap", description="Plug Map: which open-source sustainability tools share data formats.")
     sub = p.add_subparsers(dest="cmd", required=True)
     s = sub.add_parser("catalog", help="download the OpenSustain.tech catalog and list its categories")
     s.add_argument("--refresh", action="store_true", help="pull the latest catalog")

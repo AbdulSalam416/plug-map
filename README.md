@@ -1,8 +1,8 @@
 # Plug Map
 
-**Which open-source sustainability tools can exchange data?**
+**Which open-source sustainability tools share data formats?**
 
-Plug Map goes through the [OpenSustain.tech](https://opensustain.tech) catalog one category at a time. For each tool it records which data formats, protocols, standards, data sources and code ecosystems the tool **reads**, **writes**, **speaks** or **pulls**. Every record is a *claim* with evidence: the file and line of code, the dependency it declares, or the README sentence it came from.
+Plug Map goes through the [OpenSustain.tech](https://opensustain.tech) catalog one category at a time. For each tool it records which data formats, protocols, standards, data sources and code ecosystems the tool **reads**, **writes**, **speaks** or **pulls**. Every record is a *claim* with evidence: the file and line of code, the dependency it declares, or the README sentence it came from. Plug Map shows shared formats, not verified compatibility.
 
 The result is a dataset (`data/claims/*.jsonl`) and a static website (`site/`) for browsing it: categories, a tool's plugs, and which tools sit upstream or downstream of it.
 

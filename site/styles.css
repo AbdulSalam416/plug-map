@@ -148,7 +148,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, [tabindex]:focus-vis
 
 /* Page heads. The overview opens with a hero; other routes with an eyebrow, title and description. */
 .hero { display: flex; flex-direction: column; gap: 24px; padding: 32px 0 16px; }
-.hero h1 { font-size: 64px; max-width: 16ch; }
+.hero h1 { font-size: 64px; max-width: 20ch; }
 .lede { max-width: 68ch; font-size: 22px; line-height: 1.5; color: var(--color-text-secondary); }
 .hero .lede { font-size: 24px; line-height: 1.4; }
 .page-head { display: flex; flex-direction: column; gap: 16px; max-width: 72ch; }

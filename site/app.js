@@ -51,6 +51,66 @@
   }
   function plural(n, one, many) { return fmt(n) + ' ' + (n === 1 ? one : (many || one + 's')); }
 
+  // ---------- term marks ----------
+  // A term's official logo where it has one (files in logos/, sources in logos/SOURCES.md), otherwise
+  // a drawn tile: a short name tinted by kind, with a folded corner for file formats.
+  // The mark always sits next to the term's name, so it is decorative and hidden from screen readers.
+  // Term id -> extension of its logo file, logos/<id>.<ext>.
+  var LOGOS = {
+    bacnet: 'svg', brick: 'png', canbus: 'svg', cim: 'svg', citygml: 'png', dlms: 'png', dnp3: 'png',
+    earth_obs: 'svg', eia: 'svg', energyplus: 'png', entsoe: 'svg', era5: 'svg', fmi: 'svg',
+    frictionless: 'svg', gridlabd: 'png', grpc: 'svg', gym: 'svg', haystack: 'svg', hdf5: 'svg',
+    home_assistant: 'svg', hoymiles: 'png', iamc: 'png', iec104: 'svg', iec61850: 'svg', ieee2030_5: 'svg',
+    inverter_deye: 'png', inverter_foxess: 'png', inverter_goodwe: 'svg', inverter_huawei: 'svg',
+    inverter_lux: 'png', inverter_solis: 'svg', inverter_sunsynk: 'png', json: 'svg', knx: 'svg',
+    linked_data: 'svg', lorawan: 'svg', matpower: 'png', mcp: 'svg', messageix: 'svg', modbus: 'svg',
+    modelica: 'svg', mqtt: 'svg', nasapower: 'svg', netcdf: 'png', ninja: 'png', ocpi: 'png', ocpp: 'png',
+    oemof: 'svg', oeo: 'svg', openadr: 'png', opendss: 'png', openmdao: 'png', openmeteo: 'png',
+    openpaygo: 'svg', openvsp: 'png', osemosys: 'png', osm: 'svg', pandapower: 'svg', parquet: 'svg',
+    plexos: 'png', powermodels: 'svg', psse: 'svg', pvlib: 'png', pybamm: 'svg', pypsa: 'svg',
+    sensorthings: 'svg', sienna: 'png', solax: 'png', sts: 'png', sunspec: 'png', timeseries_db: 'svg',
+    yaml: 'svg', zarr: 'svg', zigbee: 'svg'
+  };
+  var ON_DARK = {};  // logos with white ink, shown on a dark tile
+  // Wordmarks and other logos wider than about 2:1, shown on a wide tile.
+  var WIDE = {
+    bacnet: 1, citygml: 1, dnp3: 1, era5: 1, gridlabd: 1, grpc: 1, haystack: 1, hdf5: 1, hoymiles: 1,
+    ieee2030_5: 1, inverter_deye: 1, inverter_goodwe: 1, inverter_lux: 1, knx: 1, lorawan: 1, modbus: 1,
+    nasapower: 1, openadr: 1, opendss: 1, openmdao: 1, openpaygo: 1, pandapower: 1, plexos: 1, psse: 1,
+    solax: 1
+  };
+  var SHORT = { csv: 'CSV', excel: 'XLS', geojson: 'GEO', raster_gis: 'TIF', vector_gis: 'SHP', rest_api: 'API', sql: 'SQL',
+    weather_files: 'EPW', rts_gmlc: 'RTS', openfast_files: 'FST', rs485: '485', i2c: 'I²C', avrswap: 'SWAP', gbxml: 'gbXML',
+    psu_wopwop: 'WOP', openfast: 'FAST', openfoam: 'FOAM', hawc2: 'HAWC2', thermosteam: 'TMS', pvgis: 'PVGIS', opcua: 'OPC' };
+  var DOC_KINDS = { format: true, generic: true };
+  // Like an element symbol: "MQTT" -> "MQTT", "US EIA" -> "UE", "oemof" -> "Oe", "Renewables.ninja" -> "Re"
+  function monogram(label) {
+    var words = label.replace(/\(.*?\)/g, '').split(/[\s\/·-]+/).filter(Boolean);
+    if (/^[A-Z0-9]{2,4}$/.test(words[0] || '')) { return words[0]; }
+    if (words.length > 1) { return (words[0][0] + words[1][0]).toUpperCase(); }
+    var w = words[0] || '?';
+    return w[0].toUpperCase() + (w[1] || '').toLowerCase();
+  }
+  function fallbackMark(k, cls) {
+    var term = D.V[k] || { l: k, k: 'generic' }, text = SHORT[k] || monogram(term.l);
+    return h('span', { class: cls + ' mark--fb mark--' + term.k + (DOC_KINDS[term.k] ? ' mark--doc' : ''), 'aria-hidden': 'true',
+      'data-len': String(Math.min(text.length, 5)) }, text);
+  }
+  function mark(k, size) {
+    var cls = 'mark' + (size ? ' mark--' + size : '');
+    if (!LOGOS[k]) { return fallbackMark(k, cls); }
+    var tile = h('span', { class: cls + (WIDE[k] ? ' mark--wide' : '') + (ON_DARK[k] ? ' mark--on-dark' : ''), 'aria-hidden': 'true' });
+    add(tile, h('img', { src: 'logos/' + k + '.' + LOGOS[k], alt: '', loading: 'lazy', decoding: 'async',
+      onerror: function () { tile.replaceWith(fallbackMark(k, cls)); } }));
+    return tile;
+  }
+  // In rows, a mark sits in a slot as wide as a wide tile, so the names after it line up.
+  function slot(k, size) { return h('span', { class: 'mark-slot' + (size ? ' mark-slot--' + size : '') }, mark(k, size)); }
+  // A term's name with its mark in front, for rows and lists.
+  function termName(k, size, nameAttrs) {
+    return h('span', { class: 'term-name' }, slot(k, size), h('span', nameAttrs || null, D.V[k].l));
+  }
+
   // ---------- routing ----------
   function toolKey(t) { return t.u.replace(/^https?:\/\//, '').replace(/\/$/, ''); }
   function toolHref(t) { return '#/tool/' + encodeURIComponent(toolKey(t)); }
@@ -214,6 +274,16 @@
       { v: fmt(D.tools.length), l: 'tools read in mapped categories' },
       { v: fmt(claims), l: 'claims, each with evidence' }
     ]));
+    var common = Object.keys(D.df).sort(function (a, b) { return D.df[b] - D.df[a]; }).slice(0, 18);
+    if (common.length) {
+      add(main, h('section', { class: 'stack', style: 'gap:12px' },
+        h('div', { class: 'head-row' }, h('h2', null, 'Found most often'),
+          h('span', { class: 'small muted' }, 'Specific formats, protocols, standards, sources and ecosystems, by number of tools.')),
+        h('ul', { class: 'plug-cloud' }, common.map(function (k) {
+          return h('li', { class: 'plug-chip' }, mark(k), h('span', { class: 'plug-chip__name' }, D.V[k].l),
+            h('span', { class: 'chip-count' }, plural(D.df[k], 'tool')));
+        }))));
+    }
     add(main, strengthPanel());
 
     var cards = idx.cats.map(function (c) {
@@ -253,7 +323,7 @@
       h('h2', null, 'Bridges between categories'),
       h('p', { class: 'small muted' }, 'Formats, standards and sources used in more than one mapped category, with the number of tools in each.'),
       multi.length ? multi.map(function (k) {
-        return h('div', { class: 'bridge' }, h('span', { style: 'font-weight:500' }, D.V[k].l),
+        return h('div', { class: 'bridge' }, termName(k, null, { style: 'font-weight:500' }),
           h('span', { class: 'bridge-cells' }, D.mapped.map(function (c) {
             var n = counts[k][c.n] || 0;
             return h('span', { class: 'cell' }, h('span', { class: 'muted' }, c.n), bar(n / maxCell, 'green'), h('span', { class: 'num' }, n));
@@ -356,7 +426,8 @@
       h('p', { class: 'small muted' }, 'Found from calls in each tool’s own code, such as to_netcdf or read_parquet; calls only in tests or examples are left out. So are general formats like CSV and JSON, which say little about compatibility.'),
       fkeys.length ? [h('div', { class: 'dv-head', 'aria-hidden': 'true' }, h('span', null, ''), h('span', null, 'reads'), h('span', null, 'writes'))].concat(fkeys.map(function (k) {
         return h('div', { class: 'dv' },
-          h('span', { class: 'dv-name' }, h('span', { style: 'font-weight:500' }, V[k].l), h('span', { class: 'tiny muted' }, layerName(k))),
+          h('span', { class: 'dv-name' }, slot(k),
+            h('span', { class: 'stack', style: 'gap:0;min-width:0' }, h('span', { style: 'font-weight:500' }, V[k].l), h('span', { class: 'tiny muted' }, layerName(k)))),
           h('span', { class: 'dv-left' }, h('span', { class: 'num small' }, rd[k] || 0), bar((rd[k] || 0) / fmax, 'blue', 'dv-bar')),
           h('span', { class: 'dv-right' }, bar((wr[k] || 0) / fmax, 'green', 'dv-bar'), h('span', { class: 'num small' }, wr[k] || 0)));
       })) : h('p', { class: 'small muted' }, 'No read or write calls found yet.')));
@@ -367,7 +438,8 @@
       var mx = keys.length ? use[keys[0]] : 1;
       return h('section', { class: 'panel', style: 'gap:10px' }, h('h3', null, title),
         keys.length ? keys.map(function (k) {
-          return h('span', { class: 'rank' }, h('span', { class: 'stack', style: 'gap:0' }, h('span', null, V[k].l), bar(use[k] / mx, 'grey')),
+          return h('span', { class: 'rank' }, h('span', { class: 'rank-name' }, slot(k),
+              h('span', { class: 'stack', style: 'gap:0;flex:1;min-width:0' }, h('span', null, V[k].l), bar(use[k] / mx, 'grey'))),
             h('span', { class: 'num' }, use[k]));
         }) : h('span', { class: 'small muted' }, 'None found in this category yet.'));
     };
@@ -404,11 +476,13 @@
       add(listBox, h('span', { class: 'small muted', role: 'status' }, plural(rows.length, 'tool') + (rows.length > st.limit ? ', showing ' + st.limit : '')));
       if (rows.length) {
         add(listBox, h('div', { class: 'list' }, rows.slice(0, st.limit).map(function (t) {
-          var labels = Array.from(t.plugs).sort(function (a, b) { return (D.df[a] || 0) - (D.df[b] || 0); })
-            .slice(0, 4).map(function (k) { return V[k].l; });
+          var keys = Array.from(t.plugs).sort(function (a, b) { return (D.df[a] || 0) - (D.df[b] || 0); });
+          var labels = keys.slice(0, 4).map(function (k) { return V[k].l; });
           return h('a', { class: 'list-row', href: toolHref(t) },
             h('span', { class: 'stack', style: 'gap:0;min-width:0' }, h('span', { class: 'name' }, t.n),
               h('span', { class: 'small muted' }, t.sc + (labels.length ? ' · ' + labels.join(', ') : ''))),
+            h('span', { class: 'marks', 'aria-hidden': 'true' }, keys.slice(0, 5).map(function (k) { return mark(k, 'sm'); }),
+              keys.length > 5 ? h('span', { class: 'marks-more' }, '+' + (keys.length - 5)) : null),
             h('span', { class: 'meta' }, h('span', null, plural(t.plugs.size, 'plug')),
               h('span', null, 'reads ' + t.reads.size + ' · writes ' + t.writes.size)));
         })));
@@ -494,14 +568,15 @@
         h('h2', { style: 'margin-bottom:8px' }, o[1]),
         keys.map(function (k) {
           var c = role === 'uses' ? byItem[k].other : byItem[k].roles[role];
-          return h('div', { class: 'claim' },
-            h('span', { class: 'claim-head' }, h('span', { class: 'label' }, V[k].l),
-              h('span', { class: 'tag' }, D.spec(k) ? layerName(k) : 'general format'),
-              h('span', { class: 'tag outline' }, Object.keys(byItem[k].methods).join(' · ')),
-              c.x ? h('span', { class: 'tag aux', title: 'Not counted as a direction: the call is not in the tool’s own code' }, 'only in ' + c.x) : null),
-            evidence(t, c),
-            c.pf ? h('span', { class: 'ev', title: 'Variable names and conventions in the code of the files that make this call' },
-              'In files with this call: ' + profileText(c.pf)) : null);
+          return h('div', { class: 'claim' }, mark(k, 'lg'),
+            h('div', { class: 'claim-body' },
+              h('span', { class: 'claim-head' }, h('span', { class: 'label' }, V[k].l),
+                h('span', { class: 'tag' }, D.spec(k) ? layerName(k) : 'general format'),
+                h('span', { class: 'tag outline' }, Object.keys(byItem[k].methods).join(' · ')),
+                c.x ? h('span', { class: 'tag aux', title: 'Not counted as a direction: the call is not in the tool’s own code' }, 'only in ' + c.x) : null),
+              evidence(t, c),
+              c.pf ? h('span', { class: 'ev', title: 'Variable names and conventions in the code of the files that make this call' },
+                'In files with this call: ' + profileText(c.pf)) : null));
         }));
     }).filter(Boolean);
     var left = h('section', { class: 'grow stack', style: 'gap:16px' },
@@ -604,7 +679,7 @@
           h('span', { class: 'tiny muted', style: 'margin-bottom:6px' }, keys.length + ' terms · ' + unused + ' not seen in any mapped tool yet'),
           keys.map(function (k) {
             var n = D.anyCount[k] || 0;
-            return h('span', { class: 'term' }, h('span', { class: n ? '' : 'zero' }, V[k].l),
+            return h('span', { class: 'term' + (n ? '' : ' unseen') }, termName(k, 'sm', { class: n ? null : 'zero' }),
               h('span', { class: 'tiny muted' }, kindName[V[k].k] || V[k].k),
               h('span', { class: 'num' }, plural(n, 'tool')));
           }));

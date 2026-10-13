@@ -33,6 +33,16 @@
   --color-fill-write: #067949;
   --color-fill-neutral: #4e6a9a;
   --color-fill-ink: #101620;
+  /* Term marks: logo tiles stay light in both themes so brand colours read as intended.
+     Drawn fallbacks are tinted by kind: formats blue, sources green, standards amber, the rest slate. */
+  --mark-bg: #ffffff;
+  --mark-border: #e6edf3;
+  --mark-format-bg: #e3ecfd; --mark-format-ink: #1d4ed8;
+  --mark-source-bg: #dcfbea; --mark-source-ink: #067949;
+  --mark-standard-bg: #fdf0d5; --mark-standard-ink: #92400e;
+  --mark-protocol-bg: #e9edf5; --mark-protocol-ink: #2e3f5c;
+  --mark-ecosystem-bg: #eef2f7; --mark-ecosystem-ink: #4e6a9a;
+  --mark-generic-bg: #f1f4f8; --mark-generic-ink: #4e6a9a;
   --font-heading: 'Space Grotesk', system-ui, sans-serif;
   --font-body: 'Space Grotesk', system-ui, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
@@ -67,6 +77,14 @@
   --color-fill-write: #47f6ad;
   --color-fill-neutral: #94a3b8;
   --color-fill-ink: #e2e8f0;
+  --mark-bg: #f1f5f9;
+  --mark-border: #334155;
+  --mark-format-bg: rgba(59, 130, 246, 0.16); --mark-format-ink: #93c5fd;
+  --mark-source-bg: rgba(71, 246, 173, 0.13); --mark-source-ink: #47f6ad;
+  --mark-standard-bg: rgba(251, 191, 36, 0.13); --mark-standard-ink: #fbbf24;
+  --mark-protocol-bg: rgba(148, 163, 184, 0.16); --mark-protocol-ink: #cbd5e1;
+  --mark-ecosystem-bg: rgba(148, 163, 184, 0.12); --mark-ecosystem-ink: #94a3b8;
+  --mark-generic-bg: rgba(148, 163, 184, 0.1); --mark-generic-ink: #94a3b8;
 }
 
 /* --- Base --- */
@@ -205,6 +223,38 @@ a.snapshot:hover { border-color: var(--color-primary); color: var(--color-link);
 .tag.outline { background: none; border-color: var(--color-border-strong); }
 .tag.aux { background: var(--color-warning-bg); border-color: currentColor; color: var(--color-warning); }
 
+/* Term marks: the official logo on a light tile, or a drawn tile with a short name.
+   File formats get a folded corner, cut in the colour of what sits behind the tile (--mark-surround). */
+.mark { --size: 28px; position: relative; flex: none; display: inline-flex; align-items: center; justify-content: center; width: var(--size); height: var(--size); border: 1px solid var(--mark-border); border-radius: 8px; background: var(--mark-bg); overflow: hidden; }
+.mark--sm { --size: 22px; border-radius: 6px; }
+.mark--lg { --size: 40px; border-radius: 10px; }
+.mark img { display: block; width: 76%; height: 76%; object-fit: contain; }
+.mark--on-dark { background: #101620; border-color: #101620; }
+.mark--wide { width: calc(var(--size) * 2); }
+.mark--wide img { width: 86%; height: 64%; }
+.mark-slot { flex: none; display: inline-flex; justify-content: center; width: 56px; }
+.mark-slot--sm { width: 44px; }
+.mark--fb { border-color: transparent; font-family: var(--font-heading); font-size: calc(var(--size) * 0.36); font-weight: 700; letter-spacing: -0.04em; line-height: 1; white-space: nowrap; }
+.mark--fb[data-len="4"] { font-size: calc(var(--size) * 0.29); }
+.mark--fb[data-len="5"] { font-size: calc(var(--size) * 0.24); }
+.mark--format { background: var(--mark-format-bg); color: var(--mark-format-ink); }
+.mark--generic { background: var(--mark-generic-bg); color: var(--mark-generic-ink); }
+.mark--source { background: var(--mark-source-bg); color: var(--mark-source-ink); }
+.mark--standard { background: var(--mark-standard-bg); color: var(--mark-standard-ink); }
+.mark--protocol { background: var(--mark-protocol-bg); color: var(--mark-protocol-ink); }
+.mark--ecosystem { background: var(--mark-ecosystem-bg); color: var(--mark-ecosystem-ink); }
+.mark--doc { border-top-right-radius: 0; padding-top: calc(var(--size) * 0.16); }
+.mark--doc::before { content: ""; position: absolute; top: 0; right: 0; width: 32%; height: 32%; background: linear-gradient(225deg, var(--mark-surround, var(--color-card-bg)) 50%, color-mix(in srgb, currentColor 35%, transparent) 50%); }
+.term-name { display: inline-flex; align-items: center; gap: 10px; min-width: 0; }
+.term-name > span:last-child { min-width: 0; overflow-wrap: anywhere; }
+.marks { display: flex; align-items: center; gap: 4px; }
+.marks-more { margin-left: 2px; font-family: var(--font-heading); font-size: 11px; font-weight: 500; color: var(--color-text-secondary); font-variant-numeric: tabular-nums; }
+
+/* Most-found plugs on the overview */
+.plug-cloud { display: flex; flex-wrap: wrap; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.plug-chip { display: inline-flex; align-items: center; gap: 10px; padding: 6px 14px 6px 6px; border: 1px solid var(--color-border); border-radius: 14px; background: var(--color-card-bg); box-shadow: 0 6px 18px rgba(16, 22, 32, 0.04); }
+.plug-chip__name { font-family: var(--font-heading); font-size: 14px; font-weight: 500; color: var(--color-text); }
+
 /* Bridges */
 .bridge { display: grid; grid-template-columns: minmax(0, 11rem) minmax(0, 1fr); gap: 12px; align-items: center; border-top: 1px solid var(--color-border); padding-top: 10px; }
 .bridge-cells { display: flex; flex-direction: column; gap: 3px; }
@@ -217,19 +267,20 @@ a.snapshot:hover { border-color: var(--color-primary); color: var(--color-link);
 .swatch { display: inline-block; width: 10px; height: 10px; }
 .swatch.blue { background: var(--color-fill-read); }
 .swatch.green { background: var(--color-fill-write); }
-.dv { display: grid; grid-template-columns: minmax(0, 12rem) minmax(0, 1fr) minmax(0, 1fr); gap: 10px; align-items: center; border-top: 1px solid var(--color-border); padding-top: 8px; }
-.dv-name { display: flex; flex-direction: column; min-width: 0; }
+.dv { display: grid; grid-template-columns: minmax(0, 15rem) minmax(0, 1fr) minmax(0, 1fr); gap: 10px; align-items: center; border-top: 1px solid var(--color-border); padding-top: 8px; }
+.dv-name { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .dv-left { display: flex; justify-content: flex-end; align-items: center; gap: 6px; }
 .dv-right { display: flex; align-items: center; gap: 6px; }
 .dv-bar { display: flex; width: 80%; height: 12px; }
 .dv-left .dv-bar { justify-content: flex-end; }
-.dv-head { display: grid; grid-template-columns: minmax(0, 12rem) minmax(0, 1fr) minmax(0, 1fr); gap: 10px; font-family: var(--font-heading); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.14em; color: var(--color-text-secondary); }
+.dv-head { display: grid; grid-template-columns: minmax(0, 15rem) minmax(0, 1fr) minmax(0, 1fr); gap: 10px; font-family: var(--font-heading); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.14em; color: var(--color-text-secondary); }
 .dv-head span:nth-child(2) { text-align: right; }
 
 /* Small ranked panels */
 .trio { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
 .rank { display: grid; grid-template-columns: minmax(0, 1fr) 2.5rem; gap: 8px; align-items: center; font-size: 14px; }
 .rank .track { height: 6px; margin-top: 4px; }
+.rank-name { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .num { font-family: var(--font-heading); font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; color: var(--color-black); }
 
 /* Tool list: filter chips, search, rows */
@@ -242,7 +293,7 @@ a.snapshot:hover { border-color: var(--color-primary); color: var(--color-link);
 .search { width: 100%; max-width: 420px; min-height: 40px; padding: 9px 12px; border: 1px solid var(--color-border); border-radius: 0; background: var(--color-bg); color: var(--color-text); font-family: var(--font-heading); font-size: 14px; font-weight: 500; }
 .search:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
 .list { display: flex; flex-direction: column; border-top: 1px solid var(--color-border); }
-.list-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 16px; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--color-border); color: inherit; text-decoration: none; min-height: 44px; }
+.list-row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 4px 16px; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--color-border); color: inherit; text-decoration: none; min-height: 44px; }
 .list-row .name { font-weight: 700; color: var(--color-black); }
 .list-row:hover .name { color: var(--color-link); }
 .list-row .small { font-size: 13px; }
@@ -259,7 +310,10 @@ a.snapshot:hover { border-color: var(--color-primary); color: var(--color-link);
 .purl .mono { font-size: 14px; overflow-wrap: anywhere; }
 .facts { display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center; font-family: var(--font-heading); font-size: 14px; font-weight: 500; color: var(--color-text-secondary); }
 .facts a { font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
-.claim { border-top: 1px solid var(--color-border); padding: 10px 0; display: flex; flex-direction: column; gap: 6px; }
+.claim { border-top: 1px solid var(--color-border); padding: 12px 0; display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 6px 14px; align-items: start; }
+.claim > .mark { justify-self: center; }
+.claim > .mark--wide { width: 64px; }
+.claim-body { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .claim-head { display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: baseline; }
 .claim-head .label { font-weight: 700; color: var(--color-black); }
 .ev { font-family: var(--font-mono); font-size: 12px; color: var(--color-text-secondary); overflow-wrap: anywhere; white-space: pre-wrap; }
@@ -274,7 +328,8 @@ a.snapshot:hover { border-color: var(--color-primary); color: var(--color-link);
 .prop-head { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; }
 .prop-head .label { font-weight: 700; color: var(--color-black); }
 .quote { font-size: 14px; border-left: 3px solid var(--color-border-strong); padding-left: 12px; color: var(--color-text-soft); }
-.term { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 10px; align-items: baseline; border-top: 1px solid var(--color-border); padding: 6px 0; font-size: 14px; }
+.term { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 10px; align-items: center; border-top: 1px solid var(--color-border); padding: 6px 0; font-size: 14px; }
+.term.unseen .mark { opacity: 0.5; filter: grayscale(1); }
 .term .zero { color: var(--color-text-secondary); }
 .term .num { min-width: 4.5rem; font-size: 12px; font-weight: 500; }
 .howto { background: var(--color-bg-alt); border: 1px solid var(--color-border); padding: 12px 14px; font-size: 14px; }
@@ -329,6 +384,14 @@ a.snapshot:hover { border-color: var(--color-primary); color: var(--color-link);
 @media (max-width: 640px) {
   .dv, .dv-head { grid-template-columns: minmax(0, 7rem) minmax(0, 1fr) minmax(0, 1fr); gap: 6px; }
   .dv-bar { width: 70%; }
+  .dv-name .mark-slot { display: none; }
+  .list-row { grid-template-columns: minmax(0, 1fr) auto; }
+  .list-row .marks { grid-column: 1 / -1; grid-row: 2; }
+  .list-row .meta { grid-column: 2; grid-row: 1; }
+  .claim { column-gap: 10px; }
+  .claim { grid-template-columns: 52px minmax(0, 1fr); }
+  .claim .mark--lg { --size: 32px; border-radius: 8px; }
+  .claim > .mark--wide { width: 52px; }
   .bridge { grid-template-columns: 1fr; gap: 4px; }
   .cell { grid-template-columns: minmax(0, 7rem) minmax(0, 1fr) 2rem; }
   .stat-v { font-size: 34px; }

@@ -25,6 +25,7 @@ CC BY 4.0 does not replace those.
 | Tool name, repository URL, category, sub-category, description | [OpenSustain.tech](https://opensustain.tech) catalog | CC BY 4.0 |
 | `stars`, `last_commit` (`st`, `a` on the site) | [ecosyste.ms](https://ecosyste.ms), through the OpenSustain.tech catalog | CC BY-SA 4.0 |
 | Evidence text: the code line or README sentence behind a claim | Each tool's own repository, at the commit recorded with the claim | That repository's licence |
+| Logos in `site/logos/` | Each format's, standard's or project's owner; sources in [`site/logos/SOURCES.md`](site/logos/SOURCES.md) | Trademarks of their owners, used only to identify what they name; not covered by CC BY 4.0 or MIT |
 
 The evidence excerpts are short quotes that show where a claim came from.
 Every excerpt links to its source file and line.

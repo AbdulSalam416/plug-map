@@ -9,7 +9,7 @@ MIT licence in [`LICENSE`](LICENSE).
 
 ## How to credit
 
-> Plug Map, Protontypes / OpenSustain.tech, CC BY 4.0. https://opensustain.tech
+> Plug Map by AbdulSalam416, CC BY 4.0. https://plug-map.onrender.com
 
 Or cite it using [`CITATION.cff`](CITATION.cff). Please say which data build
 you used (the `built` date in `site/data/index.json`).

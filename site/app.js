@@ -529,7 +529,7 @@
       h('p', null, 'The data is published under ', h('a', { href: 'https://creativecommons.org/licenses/by/4.0/' }, 'CC BY 4.0'),
         ' and the code under the MIT licence. Star counts and last-commit dates come from ', h('a', { href: 'https://ecosyste.ms' }, 'ecosyste.ms'),
         ' (CC BY-SA 4.0); evidence quotes come from each tool’s own repository. To cite Plug Map, use its CITATION.cff and give the data build date.'),
-      h('p', { class: 'small' }, 'Plug Map, Protontypes / OpenSustain.tech, CC BY 4.0. Data built ' + (D.raw.built || '') + '.')));
+      h('p', { class: 'small' }, 'Plug Map by AbdulSalam416, CC BY 4.0. Data built ' + (D.raw.built || '') + '.')));
   }
 
   // ---------- shell: theme toggle and mobile menu ----------

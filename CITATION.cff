@@ -11,13 +11,14 @@ abstract: >-
   with evidence: the file and line of code, the dependency it declares, or the
   README sentence it came from, pinned to a commit.
 authors:
-  - name: OpenSustain.tech
-    website: "https://opensustain.tech"
+  - alias: AbdulSalam416
+    website: "https://github.com/AbdulSalam416"
 version: 0.2.0
 license:
   - MIT
   - CC-BY-4.0
-url: "https://opensustain.tech"
+url: "https://plug-map.onrender.com"
+repository-code: "https://github.com/AbdulSalam416/plug-map"
 keywords:
   - open source
   - sustainability

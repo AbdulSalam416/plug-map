@@ -108,6 +108,10 @@ def validate():
             seen[t.get("id")] = rel
             if t.get("kind") not in KINDS:
                 problems.append(f"{where}: kind must be one of {sorted(KINDS)}")
+            if "semantic" in t and t["semantic"] is not True:
+                problems.append(f"{where}: semantic must be true or left out")
+            if t.get("semantic") and t.get("kind") == "generic":
+                problems.append(f"{where}: a generic term can't be semantic")
             if t.get("readme"):
                 try:
                     re.compile(t["readme"], re.I)

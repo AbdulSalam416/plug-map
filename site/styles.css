@@ -186,7 +186,7 @@ a.card:hover { transform: translateY(-4px); border-color: rgba(37, 99, 235, 0.25
 .card-title span:first-child { font-family: var(--font-heading); font-size: 20px; font-weight: 700; letter-spacing: -0.04em; line-height: 1.15; color: var(--color-black); }
 .meter { display: flex; flex-direction: column; gap: 6px; margin-top: auto; }
 .meter-label { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; color: var(--color-text-secondary); }
-.meter-label .num { color: var(--color-text); }
+.meter-label .num { color: var(--color-text); white-space: nowrap; }
 .cta, .inline-link { align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; padding-bottom: 4px; border-bottom: 1px solid color-mix(in srgb, var(--color-text) 28%, transparent); font-family: var(--font-heading); font-size: 14px; font-weight: 700; color: var(--color-black); text-decoration: none; }
 a.card:hover .cta, .inline-link:hover { color: var(--color-link); border-color: var(--color-primary); }
 
@@ -267,6 +267,7 @@ a.snapshot:hover { border-color: var(--color-primary); color: var(--color-link);
 .nb { display: flex; flex-direction: column; gap: 2px; border-top: 1px solid var(--color-border); padding: 10px 0; color: inherit; text-decoration: none; min-height: 44px; }
 .nb .name { font-weight: 700; color: var(--color-link); }
 .nb:hover .name { text-decoration: underline; text-underline-offset: 3px; }
+.nb .tag { align-self: flex-start; }
 
 /* Vocabulary */
 .prop { display: flex; flex-direction: column; gap: 6px; border-top: 1px solid var(--color-border); padding: 12px 0; }

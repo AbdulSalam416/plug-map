@@ -133,7 +133,7 @@
     tools.forEach(function (t) { (byCat[t.c] = byCat[t.c] || []).push(t); byKey[toolKey(t)] = t; });
     var layerTitle = {};
     (index.layers || []).forEach(function (l) { layerTitle[l.id] = l.id === 'core' ? 'core' : l.title.toLowerCase(); });
-    return { raw: index, V: V, spec: spec, tools: tools, N: N, df: df, anyCount: anyCount, idf: idf,
+    return { raw: index, V: V, spec: spec, sem: function (k) { return !!(V[k] && V[k].sem); }, tools: tools, N: N, df: df, anyCount: anyCount, idf: idf,
       writersOf: writersOf, readersOf: readersOf, byCat: byCat, catBySlug: catBySlug, byKey: byKey,
       layerTitle: layerTitle,
       mapped: index.cats.filter(function (c) { return c.s === 'mapped'; }) };
@@ -153,6 +153,42 @@
     return h(href ? 'a' : 'span', { class: 'snapshot', href: href || null,
       title: 'When the repositories were read. Every claim is pinned to the commit read then.' },
       h('span', { class: 'snapshot-dot', 'aria-hidden': 'true' }), text);
+  }
+  // Labels for a link between two tools, strongest first (see neighbours() and linkStrength()).
+  var tierName = ['Same variable names', 'Domain format', 'Container format only'];
+  var tierNote = [
+    'They use the same variable names or conventions in the files that read and write this format.',
+    'The format fixes what the data means, not only how it is stored.',
+    'They share a file format, but nothing found shows the contents line up.'];
+  // Every directed link in the mapped data (one tool writes a format in its own code, another reads
+  // it in its own code), labelled the same way as on tool pages. Counted once per pair of tools.
+  function linkStrength() {
+    var pairs = {};
+    Object.keys(D.writersOf).forEach(function (k) {
+      (D.readersOf[k] || []).forEach(function (r) {
+        D.writersOf[k].forEach(function (w) {
+          if (w === r) { return; }
+          var key = toolKey(w) + '>' + toolKey(r);
+          var p = pairs[key] = pairs[key] || { named: false, sem: false, via: [], namedVia: {}, profiles: {} };
+          p.via.push(k);
+          if (D.sem(k)) { p.sem = true; }
+          var a = w.pf.writes[k], b = r.pf.reads[k];
+          if (a && b) { a.forEach(function (x) { if (b.has(x)) { p.named = true; p.namedVia[k] = true; p.profiles[x.split(':')[0]] = true; } }); }
+        });
+      });
+    });
+    var out = { total: 0, n: [0, 0, 0], terms: [{}, {}, {}], profiles: {} };
+    Object.keys(pairs).forEach(function (key) {
+      var p = pairs[key], tier = p.named ? 0 : p.sem ? 1 : 2;
+      out.total++; out.n[tier]++;
+      Object.keys(p.profiles).forEach(function (id) { out.profiles[id] = (out.profiles[id] || 0) + 1; });
+      p.via.forEach(function (k) {
+        // Name the format that earned the label, not a container the same two tools also share.
+        if ((tier === 0 && !p.namedVia[k]) || (tier === 1 && !D.sem(k))) { return; }
+        out.terms[tier][k] = (out.terms[tier][k] || 0) + 1;
+      });
+    });
+    return out;
   }
   function layerName(k) { return D.layerTitle[D.V[k].layer] || D.V[k].layer; }
   function coverage(ts) {
@@ -178,6 +214,7 @@
       { v: fmt(D.tools.length), l: 'tools read in mapped categories' },
       { v: fmt(claims), l: 'claims, each with evidence' }
     ]));
+    add(main, strengthPanel());
 
     var cards = idx.cats.map(function (c) {
       if (c.s !== 'mapped') {
@@ -244,6 +281,43 @@
         h('span', null, h('b', null, String(open)), ' AI-proposed terms awaiting review'),
         h('a', { class: 'btn', href: '#/vocabulary' }, 'Review the vocabulary')));
     add(main, h('div', { class: 'row-wrap' }, bridges, how));
+  }
+
+  // How much the evidence shows for the links between tools, across everything mapped so far.
+  function strengthPanel() {
+    var s = linkStrength();
+    var share = function (n) {
+      if (!s.total) { return '–'; }
+      var p = 100 * n / s.total;
+      return (p > 0 && p < 1 ? p.toFixed(1) : Math.round(p)) + '%';
+    };
+    var top = function (terms, max) {
+      return Object.keys(terms).sort(function (a, b) { return terms[b] - terms[a]; }).slice(0, max)
+        .map(function (k) { return D.V[k].l; }).join(', ');
+    };
+    var row = function (tier, detail) {
+      var n = s.n[tier];
+      return h('div', { class: 'stack', style: 'gap:4px', title: tierNote[tier] },
+        h('span', { class: 'meter-label', style: 'font-size:14px' },
+          h('span', null, h('b', null, tierName[tier]), ' · ', tierNote[tier]),
+          h('span', { class: 'num' }, fmt(n) + ' · ' + share(n))),
+        bar(s.total ? n / s.total : 0, 'ink'),
+        n && detail ? h('span', { class: 'tiny muted' }, detail) : null);
+    };
+    var cats = D.mapped.map(function (c) { return c.n; });
+    return h('section', { class: 'panel', style: 'gap:12px' },
+      h('div', { class: 'head-row' }, h('h2', null, 'How strong are the links between tools?'),
+        h('a', { class: 'small', href: '#/about' }, 'How links are labelled')),
+      h('p', { class: 'small muted' }, s.total
+        ? fmt(s.total) + ' links: one tool writes a format in its own code and another reads it in theirs. A shared format shows two tools could fit together, not that they do, so each link is labelled by how much the evidence shows.'
+        : 'No links yet: they appear once tools in the mapped categories write and read the same format in their code.'),
+      s.total ? [
+        row(0, 'Through ' + top(s.terms[0], 3) + ' files with the same ' +
+          Object.keys(s.profiles).map(function (id) { return (D.raw.profiles || {})[id] || id; }).join(' or ')),
+        row(1, 'Through ' + top(s.terms[1], 4)),
+        row(2, 'Mostly through ' + top(s.terms[2], 4))] : null,
+      h('p', { class: 'tiny muted' }, 'Counted across the ' + plural(cats.length, 'mapped category', 'mapped categories') + ' (' + cats.join(', ') +
+        '), and recounted whenever a category is added.'));
   }
 
   // ---------- category ----------
@@ -433,8 +507,11 @@
     var left = h('section', { class: 'grow stack', style: 'gap:16px' },
       groups.length ? groups : h('p', { class: 'muted' }, 'No formats, protocols or data sources detected yet for this tool. That usually means the vocabulary doesn’t cover what it uses yet; see Vocabulary.'));
 
-    // Same format is a weak link for general formats; sharing variable names or conventions inside
-    // the file (a profile match) is stronger, so those neighbours come first.
+    // Every link is a shared format with the direction found in code, but the evidence differs.
+    // Tier 0: same variable names or conventions inside the file (a profile match).
+    // Tier 1: a domain format, which fixes what the data means (vocabulary `semantic: true`).
+    // Tier 2: only a container such as NetCDF or HDF5; nothing shows the contents line up.
+    // Rarer formats rank higher within a tier.
     function neighbours(mine, other, myRole, theirRole) {
       var score = {};
       mine.forEach(function (k) {
@@ -442,28 +519,40 @@
         (other[k] || []).forEach(function (u) {
           if (u === t) { return; }
           var key = toolKey(u);
-          var e = score[key] = score[key] || { u: u, w: 0, via: [], shared: [] };
-          e.w += D.idf[k] || 0; e.via.push(V[k].l);
+          var e = score[key] = score[key] || { u: u, w: 0, via: [], shared: [], sem: false, named: {} };
+          e.w += D.idf[k] || 0; e.via.push(k);
+          if (D.sem(k)) { e.sem = true; }
           var theirs = u.pf[theirRole][k];
-          if (my && theirs) { my.forEach(function (x) { if (theirs.has(x)) { e.shared.push(x); } }); }
+          if (my && theirs) { my.forEach(function (x) { if (theirs.has(x)) { e.shared.push(x); e.named[k] = true; } }); }
         });
       });
-      return Object.keys(score).map(function (k) { return score[k]; })
-        .sort(function (a, b) { return (b.shared.length > 0) - (a.shared.length > 0) || (b.w - a.w) || (b.u.st - a.u.st); });
+      return Object.keys(score).map(function (k) {
+        var e = score[k]; e.tier = e.shared.length ? 0 : e.sem ? 1 : 2;
+        // Name the formats that earned the label first, then rarer ones.
+        var key = function (x) { return e.named[x] ? 0 : D.sem(x) ? 1 : 2; };
+        e.via.sort(function (a, b) { return (key(a) - key(b)) || ((D.idf[b] || 0) - (D.idf[a] || 0)); });
+        e.via = e.via.map(function (x) { return V[x].l; });
+        return e;
+      }).sort(function (a, b) { return (a.tier - b.tier) || (b.w - a.w) || (b.u.st - a.u.st); });
     }
     function side(title, note, verb, list, none) {
+      var counts = [0, 0, 0];
+      list.forEach(function (e) { counts[e.tier]++; });
+      var summary = counts.map(function (n, i) { return n ? n + ' ' + tierName[i].toLowerCase() : null; }).filter(Boolean).join(' · ');
       return h('section', { class: 'panel', style: 'gap:6px' },
         h('h2', null, title),
         h('p', { class: 'small muted', style: 'margin-bottom:4px' }, note),
+        list.length ? h('p', { class: 'tiny' }, summary) : null,
         list.length ? list.slice(0, 8).map(function (e) {
           return h('a', { class: 'nb', href: toolHref(e.u) }, h('span', { class: 'name' }, e.u.n),
+            h('span', { class: 'tag' + (e.tier === 2 ? ' outline' : ''), title: tierNote[e.tier] }, tierName[e.tier]),
             h('span', { class: 'tiny muted' }, verb + ' ' + e.via.slice(0, 3).join(', ') + ' · ' + e.u.c),
             e.shared.length ? h('span', { class: 'tiny' }, 'Same ' + profileText(e.shared, 3)) : null);
         }) : h('span', { class: 'small muted' }, none),
         list.length > 8 ? h('span', { class: 'tiny muted' }, (list.length - 8) + ' more') : null);
     }
     var right = h('aside', { class: 'side stack', style: 'gap:16px' },
-      side('Upstream', 'Tools that write what this one reads. Tools that also use the same variable names or conventions in that file come first, then rarer shared formats.', 'writes', neighbours(t.reads, D.writersOf, 'reads', 'writes'), 'No upstream tools found yet.'),
+      side('Upstream', 'Tools that write what this one reads, from calls in both tools’ code. Each link is labelled by how much the evidence shows: same variable names first, then domain formats, then shared containers.', 'writes', neighbours(t.reads, D.writersOf, 'reads', 'writes'), 'No upstream tools found yet.'),
       side('Downstream', 'Tools that read what this one writes, ranked the same way.', 'reads', neighbours(t.writes, D.readersOf, 'writes', 'reads'), 'No downstream tools found yet.'));
     add(main, h('div', { class: 'row-wrap' }, left, right));
   }
@@ -523,6 +612,13 @@
   }
 
   // ---------- about ----------
+  // Domain formats by layer, from the vocabulary (`semantic: true`), e.g. "PyPSA network format (energy pack)".
+  function semList() {
+    var byLayer = {};
+    Object.keys(D.V).forEach(function (k) { if (D.sem(k)) { (byLayer[layerName(k)] = byLayer[layerName(k)] || []).push(D.V[k].l); } });
+    var out = Object.keys(byLayer).map(function (l) { return byLayer[l].sort().join(', ') + ' (' + l + ')'; });
+    return out.length ? out.join('; ') : 'none yet';
+  }
   function renderAbout() {
     add(main, crumbs([{ label: 'About' }]));
     add(main, h('section', { class: 'prose' },
@@ -540,7 +636,12 @@
       h('h2', null, 'Reading the numbers'),
       h('ul', null,
         h('li', null, h('b', null, 'Plug'), ': a specific format, protocol, standard, data source or ecosystem. General formats (CSV, JSON, YAML, Excel and similar) are shown on tool pages but not counted.'),
-        h('li', null, h('b', null, 'Upstream / downstream'), ': tools that write what this one reads, or read what it writes, from calls in their own code (not tests or examples). Matches on rarer formats rank higher.'),
+        h('li', null, h('b', null, 'Upstream / downstream'), ': tools that write what this one reads, or read what it writes, from calls in their own code (not tests or examples). A shared format shows the tools could fit together, not that they do, so each link is labelled by how much the evidence shows:',
+          h('ul', null,
+            h('li', null, h('b', null, 'Same variable names'), ': the files that read and write the format also use the same variable names or conventions (see below). The strongest sign.'),
+            h('li', null, h('b', null, 'Domain format'), ': a format that fixes what the data means, not only how it is stored. Each vocabulary pack marks its own. Marked so far: ' + semList() + '.'),
+            h('li', null, h('b', null, 'Container format only'), ': a shared container such as NetCDF, HDF5, Parquet or GeoPackage. Two tools can both use one and still name, scale or grid the data differently. Most links are of this kind today.')),
+          'Within each label, matches on rarer formats rank higher.'),
         h('li', null, h('b', null, 'Data snapshot'), ': the day a category’s repositories were read. Each claim links to the commit read that day, so it stays checkable after the tool changes. Categories are re-mapped from time to time, so the date can differ between categories.'),
         h('li', null, h('b', null, 'Same variable names'), ': for NetCDF, Zarr and HDF5, Plug Map also records the CF standard names, ERA5 variable names and CF conventions in the code of the file that reads or writes. Two tools that share them are more likely to really fit together than two that only share a format, so they are listed first. Names elsewhere in a tool’s code are not seen, so a missing match doesn’t mean the tools don’t fit.'),
         h('li', null, 'Claims are machine-made. A spot check of code claims found them accurate, but a README mention can be loose. Each claim shows its evidence so you can judge.')),

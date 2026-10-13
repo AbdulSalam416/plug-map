@@ -92,7 +92,8 @@ def build_site_data(log=print):
         "built": __import__("datetime").date.today().isoformat(),
         "catalog_total": sum(totals.values()) or None,
         "cats": cats,
-        "vocab": {k: {"l": t["label"], "k": t["kind"], "layer": t["layer"]} for k, t in vocab.terms.items()},
+        "vocab": {k: dict({"l": t["label"], "k": t["kind"], "layer": t["layer"]}, **({"sem": 1} if t.get("semantic") else {}))
+                  for k, t in vocab.terms.items()},
         "profiles": {p["id"]: p["label"] for p in load_profiles()},
         "layers": [{"id": "core", "title": "Core · every category", "file": "vocab/core.yml"}]
                   + [{"id": p, "title": p.replace("_", " ").title() + " pack", "file": f"vocab/packs/{p}.yml",

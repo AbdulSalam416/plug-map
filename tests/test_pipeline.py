@@ -59,6 +59,8 @@ class PipelineTest(unittest.TestCase):
         self.assertEqual(cat["mapped"], "2026-10-11")
         self.assertEqual(index["snapshot"], {"first": "2026-10-11", "last": "2026-10-11"},
                          "the snapshot is when the data was read, not when the site was built")
+        self.assertEqual(index["vocab"]["pypsa"].get("sem"), 1, "domain formats are flagged for the site")
+        self.assertNotIn("sem", index["vocab"]["netcdf"], "containers are not")
         with open(os.path.join(self.d["site"], "renewable-energy.json"), encoding="utf-8") as f:
             tool = json.load(f)["tools"][0]
         self.assertEqual((tool["n"], tool["st"], tool["a"], tool["k"]), ("sample-solar", 12, "2026-10-01", "abc123"))

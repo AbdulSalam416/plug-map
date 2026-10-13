@@ -7,6 +7,9 @@
 #                      (reads | writes | speaks | pulls) and the languages they apply to
 #   home_repos         repository names that ARE this term (so a tool never "uses" itself)
 # kind: format | protocol | standard | source | ecosystem | generic
+# semantic: true   the format fixes what the data means (a PyPSA network, a CIM model), not only
+#                  how it is stored, so two tools that share it are a stronger link than two that
+#                  share a container such as NetCDF. Shown on the site as "Domain format".
 # Edit by pull request. Run `python -m plugmap validate` before committing.
 layer: core
 settings:

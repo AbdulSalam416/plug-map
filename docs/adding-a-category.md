@@ -62,6 +62,8 @@ terms:
 
 These are examples to start from; write patterns from what the category actually uses. See [vocabulary.md](vocabulary.md).
 
+For each format term, decide whether it is a domain format and set `semantic: true` if so (see [vocabulary.md](vocabulary.md#domain-formats-semantic-true)). Without it, links through the term show as "Container format only". If the category mostly exchanges data through containers, consider a profile in `vocab/profiles.yml` for the variable or column names it uses.
+
 Then, in `config/categories.yml`:
 
 ```yaml

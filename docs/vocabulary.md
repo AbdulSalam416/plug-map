@@ -22,6 +22,7 @@ python -m plugmap run --category "…"            # re-extract (reuses cached cl
 - id: entsoe                      # unique across all files; lowercase, used in data/claims
   label: ENTSO-E Transparency     # shown on the site
   kind: source                    # format | protocol | standard | source | ecosystem | generic
+  semantic: true                  # only for formats that fix what the data means (see below)
   dependencies:                   # package names that imply this term (any language, case-insensitive,
   - entsoe-py                     #   _ and - treated the same)
   weak_dependencies: []           # hints only: recorded with weak: true, not shown or counted
@@ -45,6 +46,12 @@ All fields except `id`, `label` and `kind` are optional. A term with only `readm
 | `source` | a data provider or API (ERA5, ENTSO-E, EIA) | yes |
 | `ecosystem` | another tool whose data model you build on (PyPSA, pvlib) | yes |
 | `generic` | ubiquitous formats (CSV, JSON, YAML, Excel) | no: shown on tool pages, excluded from plug counts and upstream/downstream |
+
+### Domain formats: `semantic: true`
+
+Set `semantic: true` on a term whose format fixes what the data *means*, not only how it is stored: a PyPSA network, a MATPOWER case, a CIM grid model. Two tools linked through such a format show on the site as **Domain format**, a stronger link than **Container format only** (NetCDF, HDF5, Parquet, GeoTIFF, GeoPackage), where the files can hold anything.
+
+The flag works the same in every pack and in core; the site has no list of its own. Decide it per term when writing a pack. A good test: could two tools both use the format correctly and still disagree on what a field is called or what unit it is in? If yes, it's a container; leave the flag out. Containers can still get a stronger link through a profile (`vocab/profiles.yml`), which matches variable names inside the file. Generic terms can't be semantic.
 
 ### Roles (code patterns only)
 

@@ -146,6 +146,7 @@ terms:
 - id: cim
   label: CIM / CGMES (IEC 61970/61968)
   kind: standard
+  semantic: true
   dependencies:
   - cimpy
   - cimgraph
@@ -209,6 +210,7 @@ terms:
 - id: pypsa
   label: PyPSA network format
   kind: ecosystem
+  semantic: true
   dependencies:
   - pypsa
   readme: '\bpypsa\b'
@@ -226,6 +228,7 @@ terms:
 - id: pandapower
   label: pandapower network format
   kind: ecosystem
+  semantic: true
   dependencies:
   - pandapower
   - pandapipes
@@ -244,6 +247,7 @@ terms:
 - id: matpower
   label: MATPOWER case format
   kind: ecosystem
+  semantic: true
   dependencies:
   - pypower
   - matpower

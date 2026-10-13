@@ -15,6 +15,13 @@ class VocabularyTest(unittest.TestCase):
         self.assertEqual(full.terms["pypsa"]["layer"], "energy")
         self.assertEqual(full.terms["netcdf"]["layer"], "core")
 
+    def test_domain_formats_are_semantic_and_containers_are_not(self):
+        v = Vocabulary(pack_names())
+        for k in ("pypsa", "pandapower", "matpower", "cim"):
+            self.assertIs(v.terms[k].get("semantic"), True, k)
+        for k in ("netcdf", "hdf5", "parquet", "zarr", "vector_gis", "raster_gis", "csv"):
+            self.assertFalse(v.terms[k].get("semantic"), k)
+
     def test_code_patterns_recognise_typical_calls(self):
         v = Vocabulary(pack_names())
         cases = [

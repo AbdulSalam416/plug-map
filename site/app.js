@@ -697,8 +697,10 @@
   // ---------- load ----------
   function fail(msg) {
     main.textContent = '';
+    main.removeAttribute('aria-busy');
     add(main, h('section', { class: 'panel' }, h('h2', null, 'Could not load the data'),
       h('p', { class: 'error' }, msg),
+      h('button', { type: 'button', class: 'btn', onclick: function () { location.reload(); } }, 'Try again'),
       h('p', { class: 'small' }, 'If you opened this file directly, serve it instead: run ', h('code', { class: 'mono' }, 'python -m plugmap serve'),
         ' and open http://localhost:8080. If the data is missing, run ', h('code', { class: 'mono' }, 'python -m plugmap site'), '.')));
   }
@@ -711,6 +713,7 @@
     var mapped = index.cats.filter(function (c) { return c.s === 'mapped'; });
     return Promise.all(mapped.map(function (c) { return getJSON('data/' + c.slug + '.json'); })).then(function (files) {
       D = prep(index, files);
+      main.removeAttribute('aria-busy');
       route();
     });
   }).catch(function (e) { fail(e.message); });

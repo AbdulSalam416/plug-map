@@ -29,6 +29,8 @@
   /* Bars. Brand green #47f6ad is a highlight; as a fill on a light track it drops to 1.3:1,
      so light mode uses its 200 step (4.6:1). Dark mode can use the brand green itself. */
   --color-track: #eef2f7;
+  --color-skeleton: #e4eaf2;
+  --color-skeleton-shine: #f4f7fa;
   --color-fill-read: #2563eb;
   --color-fill-write: #067949;
   --color-fill-neutral: #4e6a9a;
@@ -73,6 +75,8 @@
   --color-accepted-bg: rgba(96, 165, 250, 0.15);
   --color-error: #f87171;
   --color-track: #1e293b;
+  --color-skeleton: #1e293b;
+  --color-skeleton-shine: #2b3a52;
   --color-fill-read: #3b82f6;
   --color-fill-write: #47f6ad;
   --color-fill-neutral: #94a3b8;
@@ -105,6 +109,7 @@ code, .mono { font-family: var(--font-mono); }
 .muted { color: var(--color-text-secondary); }
 .small { font-size: 14px; }
 .tiny { font-size: 12px; }
+.sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 .skip { position: absolute; left: -999px; top: 8px; background: var(--color-card-bg); padding: 8px 12px; z-index: 1100; }
 .skip:focus { left: 8px; }
 
@@ -165,7 +170,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, [tabindex]:focus-vis
 .side { flex: 1 1 300px; min-width: 0; }
 .head-row { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 16px; }
 .rule { border-top: 1px solid var(--color-border); }
-.page-shell > .stack { gap: 16px; }
+.page-shell > .stack, .loading > .stack { gap: 16px; }
 .section-title { font-size: 32px; }
 
 /* Page heads. The overview opens with a hero; other routes with a title and one line. */
@@ -193,6 +198,30 @@ a:focus-visible, button:focus-visible, input:focus-visible, [tabindex]:focus-vis
 .crumbs a:hover { text-decoration: underline; text-underline-offset: 3px; }
 .crumbs .here { color: var(--color-text); }
 
+
+/* Loading skeleton (index.html): the page's own classes give the sizes, grey bars stand in for the text.
+   It fades in after a moment, so a fast load goes straight to the page without a flash. */
+.loading { display: flex; flex-direction: column; gap: inherit; animation: sk-in 0.3s ease 0.2s both; }
+:root[data-start="page"] .sk-for-overview, :root:not([data-start="page"]) .sk-for-page { display: none; }
+.sk { display: block; --lh: 1.6em;
+  background: linear-gradient(100deg, var(--color-skeleton) 40%, var(--color-skeleton-shine) 50%, var(--color-skeleton) 60%) var(--color-skeleton);
+  background-size: 300% 100%; animation: sk-shine 1.6s ease-in-out infinite; }
+/* A bar one line of text tall, centred in that line. --lh is the line height of the text it stands in for. */
+.sk-text { --h: 0.7em; height: var(--h); margin: calc((var(--lh) - var(--h)) / 2) 0; max-width: 100%; }
+/* Lines stack in a flex column so the margins between them don't collapse into one. */
+.sk-lines { display: flex; flex-direction: column; align-items: flex-start; }
+.sk-h1 { font-size: 64px; max-width: 11.7em; }
+.page-head .sk-h1 { font-size: 40px; }
+.sk-h1 .sk, .sk-h2 .sk { --lh: 1.05em; --h: 0.75em; }
+.sk-h2 { font-size: 32px; }
+.lede .sk, .page-head p .sk { --lh: 1.5em; }
+.cat-name .sk { --lh: 1.1em; }
+.sk-mark { width: 28px; height: 28px; border-radius: 8px; }
+.sk-mark--wide { width: 56px; }
+/* Extra lines for the hero headline and lede, which wrap further on a phone. */
+.sk-narrow { display: none; }
+@keyframes sk-in { from { opacity: 0; } }
+@keyframes sk-shine { from { background-position: 100% 0; } to { background-position: 0 0; } }
 
 /* Bars: square, like the coverage bars on OpenSustain.tech. */
 .track { display: block; height: 8px; background: var(--color-track); overflow: hidden; }
@@ -356,12 +385,13 @@ a:focus-visible, button:focus-visible, input:focus-visible, [tabindex]:focus-vis
   .nav-toggle { display: inline-flex; }
   .mobile-nav:not([hidden]) { display: flex; }
   .page-shell { padding-top: 32px; gap: 24px; }
-  h1, .hero h1 { font-size: 40px; }
+  h1, .hero h1, .sk-h1 { font-size: 40px; }
   h2 { font-size: 26px; }
   .hero { gap: 16px; padding: 16px 0 0; }
   .hero .lede, .lede { font-size: 18px; }
   .page-shell { gap: 40px; }
   .cat-name { font-size: 22px; }
+  .sk-h2 { font-size: 26px; }
   .trio { gap: 16px; }
   .footer-inner { flex-direction: column; gap: 32px; }
   .footer-nav { flex-direction: column; align-items: flex-start; gap: 16px; }
@@ -369,6 +399,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, [tabindex]:focus-vis
 }
 
 @media (max-width: 640px) {
+  .sk-narrow { display: block; }
   .dv, .dv-head { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
   .dv-name { grid-column: 1 / -1; padding: 10px 0 4px; }
   .dv-left, .dv-right { padding-bottom: 10px; }
@@ -385,4 +416,5 @@ a:focus-visible, button:focus-visible, input:focus-visible, [tabindex]:focus-vis
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  .sk { animation: none; }
 }

@@ -11,14 +11,18 @@
     try { t = localStorage.getItem('theme'); } catch (e) {}
     if (t !== 'dark' && t !== 'light') { t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; }
     document.documentElement.setAttribute('data-theme', t);
+    // Which loading skeleton to show: the overview's, or a plain page head for every other route.
+    var r = location.hash.replace(/^#\/?/, '').split('/')[0];
+    document.documentElement.setAttribute('data-start', /^(category|tool|vocabulary|about)$/.test(r) ? 'page' : 'overview');
   })();
 </script>
+<noscript><style>.loading { display: none; }</style></noscript>
 <title>Plug Map</title>
 <meta name="description" content="Which open-source sustainability tools share data formats? Formats, protocols, standards and data sources each tool reads, writes, speaks or pulls, with evidence. Shared formats, not verified compatibility.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap">
-<link rel="stylesheet" href="styles.css?v=6">
+<link rel="stylesheet" href="styles.css?v=7">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23101620'/%3E%3Crect x='9' y='5' width='4' height='9' fill='%2347f6ad'/%3E%3Crect x='19' y='5' width='4' height='9' fill='%2347f6ad'/%3E%3Crect x='6' y='13' width='20' height='8' rx='2' fill='%23ffffff'/%3E%3Crect x='14' y='21' width='4' height='7' fill='%2361d0ff'/%3E%3C/svg%3E">
 </head>
 <body>
@@ -52,8 +56,32 @@
     <a class="mobile-nav__link" href="https://opensustain.tech" target="_blank" rel="noopener">OpenSustain.tech</a>
   </nav>
 </header>
-<main id="main" class="page-shell" tabindex="-1">
-  <p class="muted">Loading catalog data…</p>
+<main id="main" class="page-shell" tabindex="-1" aria-busy="true">
+  <!-- Shown until app.js has the data. It takes the shape of the page about to appear: the overview
+       hero and category list, or for other routes a breadcrumb and title (data-start, set in the head). -->
+  <div class="loading" role="status">
+    <span class="sr-only">Loading catalog data…</span>
+    <div class="crumbs sk-for-page" aria-hidden="true"><span class="sk sk-text" style="width:14em"></span></div>
+    <div class="hero sk-for-overview" aria-hidden="true">
+      <div class="sk-h1 sk-lines"><span class="sk sk-text" style="width:100%"></span><span class="sk sk-text" style="width:92%"></span><span class="sk sk-text sk-narrow" style="width:86%"></span><span class="sk sk-text sk-narrow" style="width:96%"></span><span class="sk sk-text" style="width:64%"></span></div>
+      <div class="lede sk-lines"><span class="sk sk-text" style="width:100%"></span><span class="sk sk-text sk-narrow" style="width:94%"></span><span class="sk sk-text sk-narrow" style="width:88%"></span><span class="sk sk-text" style="width:58%"></span></div>
+      <div class="hero-marks"><span class="sk sk-mark"></span><span class="sk sk-mark sk-mark--wide"></span><span class="sk sk-mark"></span><span class="sk sk-mark"></span><span class="sk sk-mark sk-mark--wide"></span><span class="sk sk-mark"></span><span class="sk sk-mark"></span><span class="sk sk-mark"></span><span class="sk sk-mark sk-mark--wide"></span><span class="sk sk-mark"></span></div>
+      <p class="hero-meta"><span class="sk sk-text" style="width:17em"></span></p>
+    </div>
+    <div class="page-head sk-for-page" aria-hidden="true">
+      <div class="sk-h1 sk-lines"><span class="sk sk-text" style="width:55%"></span></div>
+      <p class="sk-lines"><span class="sk sk-text" style="width:90%"></span><span class="sk sk-text" style="width:40%"></span></p>
+    </div>
+    <div class="stack" aria-hidden="true">
+      <div class="sk-h2"><span class="sk sk-text" style="width:5.5em"></span></div>
+      <div class="cat-list">
+        <div class="cat-row"><span class="cat-name"><span class="sk sk-text" style="width:8em"></span></span><span class="cat-count"><span class="sk sk-text" style="width:4.5em"></span></span></div>
+        <div class="cat-row"><span class="cat-name"><span class="sk sk-text" style="width:7em"></span></span><span class="cat-count"><span class="sk sk-text" style="width:4.5em"></span></span></div>
+        <div class="cat-row"><span class="cat-name"><span class="sk sk-text" style="width:7.5em"></span></span><span class="cat-count"><span class="sk sk-text" style="width:4em"></span></span></div>
+      </div>
+    </div>
+  </div>
+  <noscript><p class="muted">Plug Map needs JavaScript to show the catalog. The data itself is in <a href="data/index.json">data/</a>.</p></noscript>
 </main>
 <footer class="site-footer">
   <div class="footer-inner">
@@ -74,6 +102,6 @@
     </nav>
   </div>
 </footer>
-<script src="app.js?v=7"></script>
+<script src="app.js?v=8"></script>
 </body>
 </html>
